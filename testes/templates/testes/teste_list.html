@@ -1,0 +1,848 @@
+{% extends "testes/base.html" %}
+{% load static %}
+
+{% block content %}
+
+<!-- Pagina de operacao: KPIs -> filtros -> total -> acoes em lote -> tabela -->
+<!-- KPIs -->
+<div class="grid grid-cols-2 gap-4 md:grid-cols-4 mb-6">
+
+  <!-- Em andamento (Ambar) -->
+  <div class="group rounded-2xl border border-slate-200 bg-white p-4 shadow-sm
+              transition-all duration-200 ease-out
+              hover:-translate-y-1.5 hover:shadow-xl hover:scale-[1.02]
+              hover:ring-4 hover:ring-amber-50">
+    <div class="flex items-center justify-between">
+      <div class="text-sm font-medium text-slate-600">Em andamento</div>
+      <div class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-600
+                  transition-transform duration-200
+                  group-hover:scale-110 group-hover:-rotate-3">
+        <i class="fa-solid fa-hourglass-half"></i>
+      </div>
+    </div>
+    <div class="mt-3 text-3xl font-semibold tabular-nums text-slate-900">
+      {{ kpis.em_andamento }}
+    </div>
+  </div>
+
+  <!-- Promovidos (Verde) -->
+  <div class="group rounded-2xl border border-slate-200 bg-white p-4 shadow-sm
+              transition-all duration-200 ease-out
+              hover:-translate-y-1.5 hover:shadow-xl hover:scale-[1.02]
+              hover:ring-4 hover:ring-emerald-50">
+    <div class="flex items-center justify-between">
+      <div class="text-sm font-medium text-slate-600">Promovidos (mês)</div>
+      <div class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600
+                  transition-transform duration-200
+                  group-hover:scale-110 group-hover:-rotate-3">
+        <i class="fa-solid fa-circle-check"></i>
+      </div>
+    </div>
+    <div class="mt-3 text-3xl font-semibold tabular-nums text-slate-900">
+      {{ kpis.promovidos_mes }}
+    </div>
+  </div>
+
+  <!-- Cancelados (Rosa/Vermelho) -->
+  <div class="group rounded-2xl border border-slate-200 bg-white p-4 shadow-sm
+              transition-all duration-200 ease-out
+              hover:-translate-y-1.5 hover:shadow-xl hover:scale-[1.02]
+              hover:ring-4 hover:ring-rose-50">
+    <div class="flex items-center justify-between">
+      <div class="text-sm font-medium text-slate-600">Cancelados (mês)</div>
+      <div class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-rose-50 text-rose-600
+                  transition-transform duration-200
+                  group-hover:scale-110 group-hover:-rotate-3">
+        <i class="fa-solid fa-circle-xmark"></i>
+      </div>
+    </div>
+    <div class="mt-3 text-3xl font-semibold tabular-nums text-slate-900">
+      {{ kpis.cancelados_mes }}
+    </div>
+  </div>
+
+  <!-- Premios pagos (Azul) -->
+  <div class="group rounded-2xl border border-slate-200 bg-white p-4 shadow-sm
+              transition-all duration-200 ease-out
+              hover:-translate-y-1.5 hover:shadow-xl hover:scale-[1.02]
+              hover:ring-4 hover:ring-sky-50">
+    <div class="flex items-center justify-between">
+      <div class="text-sm font-medium text-slate-600">Prêmios pagos (mês)</div>
+      <div class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-sky-50 text-sky-600
+                  transition-transform duration-200
+                  group-hover:scale-110 group-hover:-rotate-3">
+        <i class="fa-solid fa-gift"></i>
+      </div>
+    </div>
+    <div class="mt-3 text-3xl font-semibold tabular-nums text-slate-900">
+      {{ kpis.premios_pagos_mes }}
+    </div>
+  </div>
+
+</div>
+
+<!-- FILTROS -->
+<div class="relative z-[20] overflow-visible rounded-2xl border border-slate-200 bg-white p-4 shadow-sm mb-4">
+  <form id="filtroForm" method="get"
+        class="flex flex-wrap items-center justify-between gap-3"
+        autocomplete="off">
+
+    <!-- ESQUERDA: filtros -->
+    <div class="flex flex-wrap items-center gap-2">
+      <!-- Filter: Colaborador -->
+      <div class="relative" data-filter>
+        <button type="button"
+                class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition-all duration-150 hover:bg-slate-50 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-100"
+                data-filter-btn>
+          <i class="fa-solid fa-user text-slate-400 transition-colors duration-150" data-filter-icon></i>
+          <span class="text-slate-500">Colaborador</span>
+          <span class="font-semibold text-slate-900" data-filter-label>
+            {% if filtros.q %}{{ filtros.q }}{% else %}Nome{% endif %}
+          </span>
+          <span class="ml-1 text-slate-400 transition-transform duration-150" data-filter-chevron>▾</span>
+        </button>
+
+        <div class="absolute left-0 top-[calc(100%+8px)] z-[30] hidden w-[320px] origin-top rounded-2xl border border-slate-200 bg-white p-3 shadow-xl"
+             data-filter-panel>
+          <div class="mb-2 text-sm font-semibold text-slate-800">Filtrar por Colaborador</div>
+
+          <input type="text"
+                 name="q"
+                 value="{{ filtros.q }}"
+                 placeholder="Digite o nome..."
+                 class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-4 focus:ring-indigo-100"
+                 data-filter-input />
+
+          <div class="mt-3 flex items-center justify-between">
+            <button type="button"
+                    class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition-all duration-150 hover:bg-slate-50 active:scale-[0.99]"
+                    data-filter-cancel>
+              Cancelar
+            </button>
+
+            <button type="submit"
+                    class="rounded-xl bg-indigo-600 px-3 py-2 text-xs font-semibold text-white transition-all duration-150 hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-100 active:scale-[0.99]"
+                    data-filter-apply>
+              Aplicar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filter: RE -->
+      <div class="relative" data-filter>
+        <button type="button"
+                class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition-all duration-150 hover:bg-slate-50 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-100"
+                data-filter-btn>
+          <i class="fa-solid fa-id-card text-slate-400 transition-colors duration-150" data-filter-icon></i>
+          <span class="text-slate-500">RE</span>
+          <span class="font-semibold text-slate-900" data-filter-label>
+            {% if filtros.re %}{{ filtros.re }}{% else %}Matrícula{% endif %}
+          </span>
+          <span class="ml-1 text-slate-400 transition-transform duration-150" data-filter-chevron>▾</span>
+        </button>
+
+        <div class="absolute left-0 top-[calc(100%+8px)] z-[30] hidden w-[280px] origin-top rounded-2xl border border-slate-200 bg-white p-3 shadow-xl"
+             data-filter-panel>
+          <div class="mb-2 text-sm font-semibold text-slate-800">Filtrar por RE</div>
+
+          <input type="text"
+                 name="re"
+                 value="{{ filtros.re }}"
+                 placeholder="Digite o RE..."
+                 class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-4 focus:ring-indigo-100"
+                 data-filter-input />
+
+          <div class="mt-3 flex items-center justify-between">
+            <button type="button"
+                    class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition-all duration-150 hover:bg-slate-50 active:scale-[0.99]"
+                    data-filter-cancel>
+              Cancelar
+            </button>
+
+            <button type="submit"
+                    class="rounded-xl bg-indigo-600 px-3 py-2 text-xs font-semibold text-white transition-all duration-150 hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-100 active:scale-[0.99]"
+                    data-filter-apply>
+              Aplicar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filter: Solicitante -->
+      <div class="relative" data-filter>
+        <button type="button"
+                class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition-all duration-150 hover:bg-slate-50 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-100"
+                data-filter-btn>
+          <i class="fa-solid fa-user-tie text-slate-400 transition-colors duration-150" data-filter-icon></i>
+          <span class="text-slate-500">Solicitante</span>
+
+          <span class="font-semibold text-slate-900" data-filter-label>
+            {% if filtros.solicitante %}
+              {% if filtros.solicitante|length == 1 %}
+                {% for s in solicitantes %}
+                  {% if s.id|stringformat:"s" == filtros.solicitante.0 %}{{ s.nome }}{% endif %}
+                {% endfor %}
+              {% else %}
+                {{ filtros.solicitante|length }} selecionados
+              {% endif %}
+            {% else %}
+              Todos
+            {% endif %}
+          </span>
+
+          <span class="ml-1 text-slate-400 transition-transform duration-150" data-filter-chevron>▾</span>
+        </button>
+
+        <div class="absolute left-0 top-[calc(100%+8px)] z-[30] hidden w-[360px] origin-top rounded-2xl border border-slate-200 bg-white p-3 shadow-xl"
+             data-filter-panel>
+          <div class="flex items-center justify-between">
+            <div class="text-sm font-semibold text-slate-800">Filtrar por Solicitante</div>
+            <button type="button" class="text-xs font-semibold text-indigo-700 hover:underline" data-filter-clear>
+              Limpar
+            </button>
+          </div>
+
+          <div class="mt-2 relative">
+            <input type="text"
+                   placeholder="Buscar..."
+                   class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:ring-4 focus:ring-indigo-100"
+                   data-filter-search />
+          </div>
+
+          <div class="mt-3 max-h-56 overflow-auto rounded-xl border border-slate-200">
+            <div class="p-2 space-y-1">
+              {% for s in solicitantes %}
+                <label class="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-slate-50"
+                      data-filter-item
+                      data-filter-text="{{ s.nome }}">
+                  <input type="checkbox"
+                         name="solicitante"
+                         value="{{ s.id }}"
+                         {% if s.id|stringformat:"s" in filtros.solicitante %}checked{% endif %}
+                         class="h-4 w-4 rounded border-slate-300" />
+                  <span class="text-sm text-slate-700">{{ s.nome }}</span>
+                </label>
+              {% endfor %}
+            </div>
+          </div>
+
+          <div class="mt-3 flex items-center justify-between">
+            <button type="button"
+                    class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition-all duration-150 hover:bg-slate-50 active:scale-[0.99]"
+                    data-filter-cancel>
+              Cancelar
+            </button>
+
+            <button type="submit"
+                    class="rounded-xl bg-indigo-600 px-3 py-2 text-xs font-semibold text-white transition-all duration-150 hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-100 active:scale-[0.99]">
+              Aplicar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filter: Status -->
+      <div class="relative" data-filter>
+        <button type="button"
+                class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition-all duration-150 hover:bg-slate-50 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-100"
+                data-filter-btn>
+          <i class="fa-solid fa-filter text-slate-400 transition-colors duration-150" data-filter-icon></i>
+          <span class="text-slate-500">Status</span>
+
+          <span class="font-semibold text-slate-900" data-filter-label>
+            {% if filtros.status %}
+              {% if filtros.status|length == 1 %}
+                {% if filtros.status.0 == "EM_ANDAMENTO" %}Em andamento{% endif %}
+                {% if filtros.status.0 == "PROMOVER" %}Promovido{% endif %}
+                {% if filtros.status.0 == "CANCELAR" %}Cancelado{% endif %}
+              {% else %}
+                {{ filtros.status|length }} selecionados
+              {% endif %}
+            {% else %}
+              Todos
+            {% endif %}
+          </span>
+
+          <span class="ml-1 text-slate-400 transition-transform duration-150" data-filter-chevron>▾</span>
+        </button>
+
+        <div class="absolute left-0 top-[calc(100%+8px)] z-[30] hidden w-[320px] origin-top rounded-2xl border border-slate-200 bg-white p-3 shadow-xl"
+             data-filter-panel>
+          <div class="flex items-center justify-between">
+            <div class="text-sm font-semibold text-slate-800">Filtrar por Status</div>
+            <button type="button" class="text-xs font-semibold text-indigo-700 hover:underline" data-filter-clear>
+              Limpar
+            </button>
+          </div>
+
+          <div class="mt-3 space-y-1 rounded-xl border border-slate-200 p-2">
+            <label class="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-slate-50">
+              <input type="checkbox" name="status" value="EM_ANDAMENTO"
+                     {% if "EM_ANDAMENTO" in filtros.status %}checked{% endif %}
+                     class="h-4 w-4 rounded border-slate-300" />
+              <span class="text-sm text-slate-700">Em andamento</span>
+            </label>
+
+            <label class="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-slate-50">
+              <input type="checkbox" name="status" value="PROMOVER"
+                     {% if "PROMOVER" in filtros.status %}checked{% endif %}
+                     class="h-4 w-4 rounded border-slate-300" />
+              <span class="text-sm text-slate-700">Promovido</span>
+            </label>
+
+            <label class="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-slate-50">
+              <input type="checkbox" name="status" value="CANCELAR"
+                     {% if "CANCELAR" in filtros.status %}checked{% endif %}
+                     class="h-4 w-4 rounded border-slate-300" />
+              <span class="text-sm text-slate-700">Cancelado</span>
+            </label>
+          </div>
+
+          <div class="mt-3 flex items-center justify-between">
+            <button type="button"
+                    class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition-all duration-150 hover:bg-slate-50 active:scale-[0.99]"
+                    data-filter-cancel>
+              Cancelar
+            </button>
+
+            <button type="submit"
+                    class="rounded-xl bg-indigo-600 px-3 py-2 text-xs font-semibold text-white transition-all duration-150 hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-100 active:scale-[0.99]">
+              Aplicar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filter: Controle do periodo -->
+      <div class="relative" data-filter>
+        <button type="button"
+                class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition-all duration-150 hover:bg-slate-50 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-100"
+                data-filter-btn>
+          <i class="fa-solid fa-calendar-check text-slate-400 transition-colors duration-150" data-filter-icon></i>
+          <span class="text-slate-500">Controle</span>
+          <span class="font-semibold text-slate-900" data-filter-label>
+            {% if filtros.controle %}
+              {% if filtros.controle|length == 1 %}
+                {% if filtros.controle.0 == "AGUARDANDO_QUESTIONAR" %}Aguardando questionar{% endif %}
+                {% if filtros.controle.0 == "AGUARDANDO_RESPOSTA" %}Aguardando resposta{% endif %}
+                {% if filtros.controle.0 == "AGUARDANDO_EXECUCAO" %}Aguardando lançamento{% endif %}
+              {% else %}
+                {{ filtros.controle|length }} selecionados
+              {% endif %}
+            {% else %}
+              Todos
+            {% endif %}
+          </span>
+          <span class="ml-1 text-slate-400 transition-transform duration-150" data-filter-chevron>▾</span>
+        </button>
+
+        <div class="absolute left-0 top-[calc(100%+8px)] z-[30] hidden w-[340px] origin-top rounded-2xl border border-slate-200 bg-white p-3 shadow-xl"
+             data-filter-panel>
+          <div class="flex items-center justify-between">
+            <div class="text-sm font-semibold text-slate-800">Filtrar por Controle</div>
+            <button type="button" class="text-xs font-semibold text-indigo-700 hover:underline" data-filter-clear>
+              Limpar
+            </button>
+          </div>
+
+          <div class="mt-3 space-y-1 rounded-xl border border-slate-200 p-2">
+            <label class="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-slate-50">
+              <input type="checkbox" name="controle" value="AGUARDANDO_QUESTIONAR"
+                     {% if "AGUARDANDO_QUESTIONAR" in filtros.controle %}checked{% endif %}
+                     class="h-4 w-4 rounded border-slate-300" />
+              <span class="text-sm text-slate-700">Aguardando questionar</span>
+            </label>
+            <label class="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-slate-50">
+              <input type="checkbox" name="controle" value="AGUARDANDO_RESPOSTA"
+                     {% if "AGUARDANDO_RESPOSTA" in filtros.controle %}checked{% endif %}
+                     class="h-4 w-4 rounded border-slate-300" />
+              <span class="text-sm text-slate-700">Aguardando resposta</span>
+            </label>
+            <label class="flex items-center gap-2 rounded-lg px-2 py-1.5 hover:bg-slate-50">
+              <input type="checkbox" name="controle" value="AGUARDANDO_EXECUCAO"
+                     {% if "AGUARDANDO_EXECUCAO" in filtros.controle %}checked{% endif %}
+                     class="h-4 w-4 rounded border-slate-300" />
+              <span class="text-sm text-slate-700">Aguardando lançamento</span>
+            </label>
+          </div>
+
+          <div class="mt-3 flex items-center justify-between">
+            <button type="button"
+                    class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition-all duration-150 hover:bg-slate-50 active:scale-[0.99]"
+                    data-filter-cancel>
+              Cancelar
+            </button>
+            <button type="submit"
+                    class="rounded-xl bg-indigo-600 px-3 py-2 text-xs font-semibold text-white transition-all duration-150 hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-100 active:scale-[0.99]">
+              Aplicar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DIREITA: acoes globais -->
+    <div class="flex w-full flex-wrap items-center justify-end gap-2 sm:w-auto">
+      <a href="{% url 'testes:teste_exportar' %}?{{ request.GET.urlencode }}"
+         class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-all duration-150 hover:bg-slate-50 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-100">
+        <i class="fa-solid fa-file-csv text-slate-400"></i>
+        Exportar CSV
+      </a>
+
+      <a href="{% url 'testes:lista' %}"
+         class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-all duration-150 hover:bg-slate-50 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-100">
+        <i class="fa-solid fa-rotate-left text-slate-400"></i>
+        Limpar
+      </a>
+    </div>
+
+  </form>
+</div>
+
+<!-- TOTAL -->
+<div class="mb-3 flex items-center justify-between text-sm">
+  <div class="text-slate-600">
+    <span class="font-semibold text-slate-900">{{ total_resultados }}</span>
+    resultado{{ total_resultados|pluralize }} encontrado{{ total_resultados|pluralize }}.
+    {% if page_obj %}
+      <span class="ml-1 text-slate-500">
+        Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}.
+      </span>
+    {% endif %}
+  </div>
+  <div class="hidden sm:block text-xs text-slate-500">
+    Período de controle: {{ periodo_controle_inicio|date:"d/m/Y" }} a {{ periodo_controle_fim|date:"d/m/Y" }}
+  </div>
+</div>
+
+<!-- ACOES EM LOTE (aparece so quando houver selecao) -->
+<form id="bulkActions" method="post" class="mb-4">
+  {% csrf_token %}
+
+  <div id="bulkBar" class="hidden rounded-2xl border border-indigo-100 bg-indigo-50/40 p-3 shadow-sm">
+    <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <div class="text-sm text-slate-700">
+        Selecionados: <span id="selCount" class="font-semibold text-slate-900">0</span>
+      </div>
+
+      <div class="flex flex-wrap gap-2">
+        <button
+          id="btnBulkQuestionar"
+          type="submit"
+          formaction="{% url 'testes:bulk_questionar' %}"
+          data-confirm-form="Marcar os testes selecionados como questionados no período atual?"
+          data-confirm-title="Marcar questionado (lote)"
+          data-with-obs="0"
+          class="rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm font-semibold text-indigo-700 transition-all duration-150 hover:bg-indigo-100 active:translate-y-[1px] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
+          disabled
+        >
+          Questionado
+        </button>
+
+        <button
+          id="btnBulkPromover"
+          type="submit"
+          formaction="{% url 'testes:bulk_promover' %}"
+          data-confirm-form="Promover os testes selecionados? Esta ação bloqueia o teste."
+          data-confirm-title="Promover (lote)"
+          data-require-obs="1"
+          class="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:bg-indigo-700 active:translate-y-[1px] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
+          disabled
+        >
+          Promover
+        </button>
+
+        <button
+          id="btnBulkPagar"
+          type="submit"
+          formaction="{% url 'testes:bulk_pagar' %}"
+          data-confirm-form="Pagar o próximo prêmio para os testes selecionados?"
+          data-confirm-title="Pagar prêmio (lote)"
+          data-require-obs="1"
+          class="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition-all duration-150 hover:bg-slate-50 active:translate-y-[1px] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
+          disabled
+        >
+          Pagar prêmio
+        </button>
+
+        <button
+          id="btnBulkCancelar"
+          type="submit"
+          formaction="{% url 'testes:bulk_cancelar' %}"
+          data-confirm-form="Cancelar os testes selecionados? Esta ação bloqueia o teste."
+          data-confirm-title="Cancelar (lote)"
+          data-require-obs="1"
+          class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-2 text-sm font-semibold text-rose-700 transition-all duration-150 hover:bg-rose-100 active:translate-y-[1px] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
+          disabled
+        >
+          Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+</form>
+
+<!-- TABELA -->
+<div class="mb-2 px-1 text-xs text-slate-500 md:hidden">
+  Role para o lado para ver todas as colunas.
+</div>
+<div class="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
+  <table class="min-w-[1240px] w-full text-sm">
+    <thead class="sticky top-0 z-10 bg-slate-50 border-b border-slate-200">
+      <tr class="text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+        <th class="px-4 py-3 w-10 text-center">
+          <input type="checkbox" id="checkAll" class="h-4 w-4 rounded border-slate-300 bg-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-100">
+        </th>
+
+        <th class="px-4 py-3 w-28 text-center">
+          {% with current_sort=request.GET.sort current_dir=request.GET.dir %}
+            {% if current_sort == "status" and current_dir != "asc" %}
+              <a class="inline-flex items-center justify-center gap-1 hover:text-slate-700"
+                href="?{% for k,v in request.GET.items %}{% if k != 'sort' and k != 'dir' %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}sort=status&dir=asc">
+                Status <span class="text-slate-400">▾</span>
+              </a>
+            {% elif current_sort == "status" and current_dir == "asc" %}
+              <a class="inline-flex items-center justify-center gap-1 hover:text-slate-700"
+                href="?{% for k,v in request.GET.items %}{% if k != 'sort' and k != 'dir' %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}sort=status&dir=desc">
+                Status <span class="text-slate-400">▴</span>
+              </a>
+            {% else %}
+              <a class="inline-flex items-center justify-center gap-1 hover:text-slate-700"
+                href="?{% for k,v in request.GET.items %}{{ k }}={{ v|urlencode }}&{% endfor %}sort=status&dir=desc">
+                Status
+              </a>
+            {% endif %}
+          {% endwith %}
+        </th>
+        <th class="px-4 py-3">
+          {% with current_sort=request.GET.sort current_dir=request.GET.dir %}
+            {% if current_sort == "re" and current_dir != "asc" %}
+              <a class="inline-flex items-center gap-1 hover:text-slate-700"
+                href="?{% for k,v in request.GET.items %}{% if k != 'sort' and k != 'dir' %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}sort=re&dir=asc">
+                RE <span class="text-slate-400">▾</span>
+              </a>
+            {% elif current_sort == "re" and current_dir == "asc" %}
+              <a class="inline-flex items-center gap-1 hover:text-slate-700"
+                href="?{% for k,v in request.GET.items %}{% if k != 'sort' and k != 'dir' %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}sort=re&dir=desc">
+                RE <span class="text-slate-400">▴</span>
+              </a>
+            {% else %}
+              <a class="inline-flex items-center gap-1 hover:text-slate-700"
+                href="?{% for k,v in request.GET.items %}{{ k }}={{ v|urlencode }}&{% endfor %}sort=re&dir=desc">
+                RE
+              </a>
+            {% endif %}
+          {% endwith %}
+        </th>
+        <th class="px-4 py-3">
+          {% with current_sort=request.GET.sort current_dir=request.GET.dir %}
+            {% if current_sort == "nome" and current_dir != "asc" %}
+              <a class="inline-flex items-center gap-1 hover:text-slate-700"
+                href="?{% for k,v in request.GET.items %}{% if k != 'sort' and k != 'dir' %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}sort=nome&dir=asc">
+                Colaborador <span class="text-slate-400">▾</span>
+              </a>
+            {% elif current_sort == "nome" and current_dir == "asc" %}
+              <a class="inline-flex items-center gap-1 hover:text-slate-700"
+                href="?{% for k,v in request.GET.items %}{% if k != 'sort' and k != 'dir' %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}sort=nome&dir=desc">
+                Colaborador <span class="text-slate-400">▴</span>
+              </a>
+            {% else %}
+              <a class="inline-flex items-center gap-1 hover:text-slate-700"
+                href="?{% for k,v in request.GET.items %}{{ k }}={{ v|urlencode }}&{% endfor %}sort=nome&dir=desc">
+                Colaborador
+              </a>
+            {% endif %}
+          {% endwith %}
+        </th>
+        <th class="px-4 py-3">
+          {% with current_sort=request.GET.sort current_dir=request.GET.dir %}
+            {% if current_sort == "funcao" and current_dir != "asc" %}
+              <a class="inline-flex items-center gap-1 hover:text-slate-700"
+                href="?{% for k,v in request.GET.items %}{% if k != 'sort' and k != 'dir' %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}sort=funcao&dir=asc">
+                Função <span class="text-slate-400">▾</span>
+              </a>
+            {% elif current_sort == "funcao" and current_dir == "asc" %}
+              <a class="inline-flex items-center gap-1 hover:text-slate-700"
+                href="?{% for k,v in request.GET.items %}{% if k != 'sort' and k != 'dir' %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}sort=funcao&dir=desc">
+                Função <span class="text-slate-400">▴</span>
+              </a>
+            {% else %}
+              <a class="inline-flex items-center gap-1 hover:text-slate-700"
+                href="?{% for k,v in request.GET.items %}{{ k }}={{ v|urlencode }}&{% endfor %}sort=funcao&dir=desc">
+                Função
+              </a>
+            {% endif %}
+          {% endwith %}
+        </th>
+        <th class="px-4 py-3">
+          {% with current_sort=request.GET.sort current_dir=request.GET.dir %}
+            {% if current_sort == "loja" and current_dir != "asc" %}
+              <a class="inline-flex items-center gap-1 hover:text-slate-700"
+                href="?{% for k,v in request.GET.items %}{% if k != 'sort' and k != 'dir' %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}sort=loja&dir=asc">
+                Loja <span class="text-slate-400">▾</span>
+              </a>
+            {% elif current_sort == "loja" and current_dir == "asc" %}
+              <a class="inline-flex items-center gap-1 hover:text-slate-700"
+                href="?{% for k,v in request.GET.items %}{% if k != 'sort' and k != 'dir' %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}sort=loja&dir=desc">
+                Loja <span class="text-slate-400">▴</span>
+              </a>
+            {% else %}
+              <a class="inline-flex items-center gap-1 hover:text-slate-700"
+                href="?{% for k,v in request.GET.items %}{{ k }}={{ v|urlencode }}&{% endfor %}sort=loja&dir=desc">
+                Loja
+              </a>
+            {% endif %}
+          {% endwith %}
+        </th>
+        <th class="px-4 py-3">
+          {% with current_sort=request.GET.sort current_dir=request.GET.dir %}
+            {% if current_sort == "regiao" and current_dir != "asc" %}
+              <a class="inline-flex items-center gap-1 hover:text-slate-700"
+                href="?{% for k,v in request.GET.items %}{% if k != 'sort' and k != 'dir' %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}sort=regiao&dir=asc">
+                Região <span class="text-slate-400">▾</span>
+              </a>
+            {% elif current_sort == "regiao" and current_dir == "asc" %}
+              <a class="inline-flex items-center gap-1 hover:text-slate-700"
+                href="?{% for k,v in request.GET.items %}{% if k != 'sort' and k != 'dir' %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}sort=regiao&dir=desc">
+                Região <span class="text-slate-400">▴</span>
+              </a>
+            {% else %}
+              <a class="inline-flex items-center gap-1 hover:text-slate-700"
+                href="?{% for k,v in request.GET.items %}{{ k }}={{ v|urlencode }}&{% endfor %}sort=regiao&dir=desc">
+                Região
+              </a>
+            {% endif %}
+          {% endwith %}
+        </th>
+        <th class="px-4 py-3">
+          {% with current_sort=request.GET.sort current_dir=request.GET.dir %}
+            {% if current_sort == "solicitante" and current_dir != "asc" %}
+              <a class="inline-flex items-center gap-1 hover:text-slate-700"
+                href="?{% for k,v in request.GET.items %}{% if k != 'sort' and k != 'dir' %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}sort=solicitante&dir=asc">
+                Solicitante <span class="text-slate-400">▾</span>
+              </a>
+            {% elif current_sort == "solicitante" and current_dir == "asc" %}
+              <a class="inline-flex items-center gap-1 hover:text-slate-700"
+                href="?{% for k,v in request.GET.items %}{% if k != 'sort' and k != 'dir' %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}sort=solicitante&dir=desc">
+                Solicitante <span class="text-slate-400">▴</span>
+              </a>
+            {% else %}
+              <a class="inline-flex items-center gap-1 hover:text-slate-700"
+                href="?{% for k,v in request.GET.items %}{{ k }}={{ v|urlencode }}&{% endfor %}sort=solicitante&dir=desc">
+                Solicitante
+              </a>
+            {% endif %}
+          {% endwith %}
+        </th>
+        <th class="px-4 py-3">
+          {% with current_sort=request.GET.sort current_dir=request.GET.dir %}
+            {% if current_sort == "premios" and current_dir != "asc" %}
+              <a class="inline-flex items-center gap-1 hover:text-slate-700"
+                href="?{% for k,v in request.GET.items %}{% if k != 'sort' and k != 'dir' %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}sort=premios&dir=asc">
+                Prêmios <span class="text-slate-400">▾</span>
+              </a>
+            {% elif current_sort == "premios" and current_dir == "asc" %}
+              <a class="inline-flex items-center gap-1 hover:text-slate-700"
+                href="?{% for k,v in request.GET.items %}{% if k != 'sort' and k != 'dir' %}{{ k }}={{ v|urlencode }}&{% endif %}{% endfor %}sort=premios&dir=desc">
+                Prêmios <span class="text-slate-400">▴</span>
+              </a>
+            {% else %}
+              <a class="inline-flex items-center gap-1 hover:text-slate-700"
+                href="?{% for k,v in request.GET.items %}{{ k }}={{ v|urlencode }}&{% endfor %}sort=premios&dir=desc">
+                Prêmios
+              </a>
+            {% endif %}
+          {% endwith %}
+        </th>
+        <th class="px-4 py-3 w-40 text-center">Controle</th>
+        <th class="px-4 py-3 text-center">Ações</th>
+      </tr>
+    </thead>
+
+    <tbody class="divide-y divide-slate-100">
+      {% for t in testes %}
+      <tr class="cursor-pointer transition-colors hover:bg-slate-50" data-detail-url="{% url 'testes:detalhe' t.id %}">
+        <td class="px-4 py-4 text-center align-middle">
+          {% if t.status == "EM_ANDAMENTO" %}
+            <input type="checkbox"
+              form="bulkActions"
+              name="selected"
+              value="{{ t.id }}"
+              class="rowCheck h-4 w-4 rounded border-slate-300 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-100"
+              data-can-pay="{% if t.premios_pagos < 3 %}1{% else %}0{% endif %}">
+          {% else %}
+            <input type="checkbox" disabled class="h-4 w-4 rounded border-slate-200 opacity-40 cursor-not-allowed">
+          {% endif %}
+        </td>
+
+        <td class="px-4 py-4 text-center align-middle">
+          {% if t.status == "EM_ANDAMENTO" %}
+            <span class="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700">
+              Em andamento
+            </span>
+          {% elif t.status == "PROMOVER" %}
+            <span class="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+              Promovido
+            </span>
+          {% else %}
+            <span class="inline-flex items-center rounded-full bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700">
+              Cancelado
+            </span>
+          {% endif %}
+        </td>
+
+        <td class="px-4 py-4 align-middle whitespace-nowrap text-slate-700">{{ t.colaborador_re }}</td>
+
+        <td class="px-4 py-4 align-middle">
+          <div class="font-semibold text-slate-900 truncate max-w-[240px]">{{ t.colaborador_nome }}</div>
+          <div class="text-xs text-slate-500 whitespace-nowrap">Início: {{ t.data_inicio|date:"d/m/Y" }}</div>
+        </td>
+
+        <td class="px-4 py-4 align-middle text-slate-700">
+          <div class="max-w-[180px] truncate" title="{{ t.funcao.nome }}">{{ t.funcao.nome }}</div>
+        </td>
+        <td class="px-4 py-4 align-middle text-slate-700">
+          <div class="max-w-[180px] truncate" title="{{ t.loja.nome }}">{{ t.loja.nome }}</div>
+        </td>
+        <td class="px-4 py-4 align-middle whitespace-nowrap text-slate-700">
+          <div class="max-w-[120px] truncate" title="{{ t.loja.regiao.nome }}">{{ t.loja.regiao.nome }}</div>
+        </td>
+        <td class="px-4 py-4 align-middle text-slate-700">
+          <div class="max-w-[220px] truncate" title="{{ t.solicitante.nome }}">{{ t.solicitante.nome }}</div>
+        </td>
+
+        <td class="px-4 py-4 align-middle whitespace-nowrap font-semibold text-slate-900 tabular-nums">
+          {{ t.premios_pagos }}/3
+        </td>
+
+        <td class="px-4 py-4 align-middle w-40">
+          {% with st=t.controle_periodo_status %}
+            <div class="min-w-[128px] flex flex-col items-center gap-1 text-center leading-tight">
+              <span class="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-semibold
+                {% if st.tone == 'emerald' %}bg-emerald-50 text-emerald-700{% elif st.tone == 'indigo' %}bg-indigo-50 text-indigo-700{% elif st.tone == 'amber' %}bg-amber-50 text-amber-700{% elif st.tone == 'rose' %}bg-rose-50 text-rose-700{% else %}bg-slate-100 text-slate-700{% endif %}">
+                {{ st.label }}
+              </span>
+              {% if t.controle_periodo_atual and t.controle_periodo_atual.decisao_supervisor %}
+                <span class="text-[11px] font-medium text-slate-500 whitespace-nowrap">
+                  {{ t.controle_periodo_atual.get_decisao_supervisor_display }}
+                </span>
+              {% endif %}
+            </div>
+          {% endwith %}
+        </td>
+
+        <td class="px-4 py-4 align-middle text-center">
+          {% if t.anexo_folha_teste %}
+            <a href="{{ t.anexo_folha_teste.url }}" target="_blank"
+               class="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white p-2 text-slate-600 transition hover:bg-indigo-50 hover:text-indigo-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-100"
+               title="Ver anexo">
+              <i class="fa-regular fa-eye"></i>
+            </a>
+          {% else %}
+            <span class="inline-flex items-center justify-center rounded-lg border border-slate-100 bg-transparent p-2 text-slate-400"
+                  title="Sem anexo">
+              <i class="fa-regular fa-eye-slash"></i>
+            </span>
+          {% endif %}
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="11" class="px-4 py-8 text-center text-slate-500">
+          Nenhum teste encontrado com esses filtros.
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if is_paginated %}
+  <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div class="text-sm text-slate-500">
+      Exibindo página <span class="font-semibold text-slate-700">{{ page_obj.number }}</span>
+      de <span class="font-semibold text-slate-700">{{ page_obj.paginator.num_pages }}</span>.
+    </div>
+
+    <nav class="flex flex-wrap items-center gap-2" aria-label="Paginação da lista de testes">
+      {% if page_obj.has_previous %}
+        <a
+          href="?{% if querystring_sem_pagina %}{{ querystring_sem_pagina }}&{% endif %}page=1"
+          class="inline-flex h-9 items-center rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+          title="Primeira página"
+        >
+          «
+        </a>
+        <a
+          href="?{% if querystring_sem_pagina %}{{ querystring_sem_pagina }}&{% endif %}page={{ page_obj.previous_page_number }}"
+          class="inline-flex h-9 items-center gap-1 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+        >
+          <i class="fa-solid fa-chevron-left text-xs"></i>
+          Anterior
+        </a>
+      {% else %}
+        <span class="inline-flex h-9 items-center rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-400">«</span>
+        <span class="inline-flex h-9 items-center gap-1 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-400">
+          <i class="fa-solid fa-chevron-left text-xs"></i>
+          Anterior
+        </span>
+      {% endif %}
+
+      {% if page_obj.number > 3 %}
+        <span class="px-1 text-slate-400">…</span>
+      {% endif %}
+
+      {% for n in paginas_visiveis %}
+        {% if n == page_obj.number %}
+          <span class="inline-flex h-9 min-w-9 items-center justify-center rounded-xl bg-indigo-600 px-3 text-sm font-semibold text-white shadow-sm">
+            {{ n }}
+          </span>
+        {% else %}
+          <a
+            href="?{% if querystring_sem_pagina %}{{ querystring_sem_pagina }}&{% endif %}page={{ n }}"
+            class="inline-flex h-9 min-w-9 items-center justify-center rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+          >
+            {{ n }}
+          </a>
+        {% endif %}
+      {% endfor %}
+
+      {% if page_obj.number < page_obj.paginator.num_pages|add:"-2" %}
+        <span class="px-1 text-slate-400">…</span>
+      {% endif %}
+
+      {% if page_obj.has_next %}
+        <a
+          href="?{% if querystring_sem_pagina %}{{ querystring_sem_pagina }}&{% endif %}page={{ page_obj.next_page_number }}"
+          class="inline-flex h-9 items-center gap-1 rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+        >
+          Próxima
+          <i class="fa-solid fa-chevron-right text-xs"></i>
+        </a>
+        <a
+          href="?{% if querystring_sem_pagina %}{{ querystring_sem_pagina }}&{% endif %}page={{ page_obj.paginator.num_pages }}"
+          class="inline-flex h-9 items-center rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+          title="Última página"
+        >
+          »
+        </a>
+      {% else %}
+        <span class="inline-flex h-9 items-center gap-1 rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-400">
+          Próxima
+          <i class="fa-solid fa-chevron-right text-xs"></i>
+        </span>
+        <span class="inline-flex h-9 items-center rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-400">»</span>
+      {% endif %}
+    </nav>
+  </div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+  <!-- Scripts da lista: dropdowns de filtro + selecao/bulk + drawer -->
+  <script src="{% static 'testes/js/filtros_dropdown.js' %}?v=3"></script>
+  <script src="{% static 'testes/js/teste_list.js' %}?v=3"></script>
+{% endblock %}
+

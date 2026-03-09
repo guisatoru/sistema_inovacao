@@ -1,0 +1,89 @@
+{% extends "testes/base.html" %}
+{% block content %}
+<div class="mx-auto w-full max-w-4xl space-y-6">
+  <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <h2 class="text-2xl font-semibold tracking-tight text-slate-900">Importação concluída</h2>
+        <p class="mt-1 text-sm text-slate-500">Resumo do que foi alterado no sistema após a confirmação.</p>
+      </div>
+
+      <div class="inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700">
+        <i class="fa-solid fa-circle-check"></i>
+        Concluído com sucesso
+      </div>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-2 gap-4 sm:grid-cols-4">
+    <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">Lojas criadas</div>
+      <div class="mt-1 text-2xl font-semibold tabular-nums text-indigo-700">{{ result.lojas_criadas|default:0 }}</div>
+    </div>
+    <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">Lojas ativas</div>
+      <div class="mt-1 text-2xl font-semibold tabular-nums text-slate-900">{{ result.lojas_ativas_importadas|default:0 }}</div>
+    </div>
+    <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">Colabs criados</div>
+      <div class="mt-1 text-2xl font-semibold tabular-nums text-emerald-700">{{ result.colabs_criados|default:0 }}</div>
+    </div>
+    <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">Colabs atualizados</div>
+      <div class="mt-1 text-2xl font-semibold tabular-nums text-sky-700">{{ result.colabs_atualizados|default:0 }}</div>
+    </div>
+  </div>
+
+  <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+
+      <div class="rounded-2xl border border-slate-200 bg-white p-4">
+        <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <i class="fa-solid fa-store text-slate-400"></i> Lojas
+        </div>
+        <div class="mt-2 space-y-1 text-sm text-slate-800">
+          <div>Criadas: <span class="font-semibold">{{ result.lojas_criadas|default:0 }}</span></div>
+          <div>Região atualizada: <span class="font-semibold">{{ result.lojas_atualizadas_regiao|default:0 }}</span></div>
+          <div>Reativadas: <span class="font-semibold">{{ result.lojas_reativadas|default:0 }}</span></div>
+          <div>Inativadas: <span class="font-semibold">{{ result.lojas_inativadas|default:0 }}</span></div>
+          <div>Ativas no import: <span class="font-semibold">{{ result.lojas_ativas_importadas|default:0 }}</span></div>
+        </div>
+      </div>
+
+      <div class="rounded-2xl border border-slate-200 bg-white p-4">
+        <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <i class="fa-solid fa-users text-slate-400"></i> Colaboradores
+        </div>
+        <div class="mt-2 space-y-1 text-sm text-slate-800">
+          <div>Criados: <span class="font-semibold">{{ result.colabs_criados|default:0 }}</span></div>
+          <div>Atualizados: <span class="font-semibold">{{ result.colabs_atualizados|default:0 }}</span></div>
+          <div>Inativados: <span class="font-semibold">{{ result.colabs_inativados|default:0 }}</span></div>
+          <div>Ignorados (STATUS!=ATIVO): <span class="font-semibold">{{ result.colabs_ignorados_status|default:0 }}</span></div>
+          <div>Sem loja ativa: <span class="font-semibold">{{ result.colabs_sem_loja_ativa|default:0 }}</span></div>
+        </div>
+      </div>
+
+    </div>
+
+    <details class="mt-5 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+      <summary class="cursor-pointer text-sm font-semibold text-slate-700 hover:text-slate-900">
+        Ver JSON completo (debug)
+      </summary>
+      <pre class="mt-3 overflow-auto rounded-xl bg-slate-900/5 p-4 text-xs text-slate-700">{{ result }}</pre>
+    </details>
+  </section>
+
+  <div class="flex flex-wrap gap-2">
+    <a href="{% url 'testes:import_gestao_pessoas' %}"
+       class="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50">
+      <i class="fa-solid fa-file-import"></i>
+      Nova importação
+    </a>
+    <a href="{% url 'testes:lista' %}"
+       class="inline-flex h-10 items-center gap-2 rounded-xl bg-indigo-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700">
+      <i class="fa-solid fa-arrow-left"></i>
+      Voltar para lista
+    </a>
+  </div>
+</div>
+{% endblock %}

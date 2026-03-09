@@ -1,0 +1,19 @@
+﻿venv/
+__pycache__/
+*.pyc
+
+# local database/media
+/db.sqlite3
+/media/
+/staticfiles/
+
+# env files
+.env
+.env.*
+!.env.example
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

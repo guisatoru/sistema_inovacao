@@ -1,0 +1,197 @@
+{% extends "testes/base.html" %}
+{% block content %}
+<div class="mx-auto w-full max-w-4xl space-y-6">
+  <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <h2 class="text-2xl font-semibold tracking-tight text-slate-900">Importar Gestão de Pessoas</h2>
+        <p class="mt-1 text-sm text-slate-500">Envie a planilha para gerar o preview e confirme apenas depois de revisar os números.</p>
+      </div>
+
+      <a href="{% url 'testes:lista' %}"
+         class="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50">
+        <i class="fa-solid fa-arrow-left"></i>
+        Voltar
+      </a>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+    <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">Fluxo</div>
+      <div class="mt-2 text-sm font-semibold text-slate-900">1. Preview</div>
+      <div class="text-sm text-slate-600">2. Conferência</div>
+      <div class="text-sm text-slate-600">3. Confirmação</div>
+    </div>
+    <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:col-span-2">
+      <div class="flex items-start gap-3">
+        <div class="mt-0.5 inline-flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+          <i class="fa-solid fa-file-import"></i>
+        </div>
+        <div>
+          <div class="text-sm font-semibold text-slate-900">Importação segura em 2 etapas</div>
+          <p class="mt-1 text-sm text-slate-500">
+            O sistema sempre gera um preview antes de salvar, para você validar o impacto da planilha.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if messages %}
+    <div class="space-y-2">
+      {% for m in messages %}
+        <div class="rounded-2xl p-4 text-sm ring-1
+                    {% if m.tags == 'success' %} bg-emerald-50 text-emerald-800 ring-emerald-200/60
+                    {% elif m.tags == 'error' %} bg-rose-50 text-rose-800 ring-rose-200/60
+                    {% else %} bg-slate-50 text-slate-800 ring-slate-200/60 {% endif %}">
+          {{ m }}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div class="flex items-center gap-3">
+      <span class="inline-flex h-7 w-7 items-center justify-center rounded-full bg-indigo-100 text-xs font-bold text-indigo-700">1</span>
+      <div>
+        <h3 class="text-sm font-semibold text-slate-900">Gerar preview da planilha</h3>
+        <p class="text-sm text-slate-500">Nenhuma alteração é aplicada nesta etapa.</p>
+      </div>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" class="mt-5 space-y-4">
+      {% csrf_token %}
+      <div>
+        <label class="mb-2 block text-sm font-semibold text-slate-700">{{ form.arquivo.label }}</label>
+        <div class="rounded-2xl border border-dashed border-slate-300 bg-slate-50/70 p-4 transition hover:border-indigo-300 hover:bg-indigo-50/30">
+          <div class="flex items-start gap-3">
+            <div class="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white text-indigo-600 ring-1 ring-slate-200">
+              <i class="fa-regular fa-file-excel"></i>
+            </div>
+            <div class="min-w-0 flex-1">
+              <div class="text-sm font-semibold text-slate-800">Selecione a planilha de Gestão de Pessoas</div>
+              <div class="mt-1 text-xs text-slate-500">Formatos aceitos: .xlsm e .xlsx</div>
+              <div class="mt-3">
+                {{ form.arquivo }}
+              </div>
+            </div>
+          </div>
+        </div>
+        {% if form.arquivo.help_text %}
+          <p class="mt-1 text-xs text-slate-500">{{ form.arquivo.help_text }}</p>
+        {% endif %}
+        {% if form.arquivo.errors %}
+          <p class="mt-1 text-sm text-rose-700">{{ form.arquivo.errors|striptags }}</p>
+        {% endif %}
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <button type="submit"
+                class="inline-flex h-10 items-center gap-2 rounded-xl bg-indigo-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-100">
+          <i class="fa-solid fa-magnifying-glass-chart"></i>
+          Gerar preview
+        </button>
+        <span class="text-xs text-slate-500">A confirmação só será liberada após gerar o preview.</span>
+      </div>
+    </form>
+  </section>
+
+  {% if preview %}
+  <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <span class="inline-flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 text-xs font-bold text-emerald-700">2</span>
+        <div>
+        <h3 class="text-sm font-semibold text-slate-900">Preview do que vai acontecer</h3>
+        <p class="mt-1 text-sm text-slate-500">Nada foi salvo ainda.</p>
+        </div>
+      </div>
+
+      <form method="post" action="{% url 'testes:import_gestao_pessoas_confirm' %}">
+        {% csrf_token %}
+        <input type="hidden" name="token" value="{{ token }}">
+        <button type="submit"
+                class="inline-flex h-10 items-center gap-2 rounded-xl bg-emerald-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 focus:ring-4 focus:ring-emerald-100">
+          <i class="fa-solid fa-circle-check"></i>
+          Confirmar importação
+        </button>
+      </form>
+    </div>
+
+    <div class="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+        <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">Lojas ativas</div>
+        <div class="mt-1 text-2xl font-semibold tabular-nums text-slate-900">{{ preview.lojas_ativas_importadas }}</div>
+      </div>
+      <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+        <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">Lojas criadas</div>
+        <div class="mt-1 text-2xl font-semibold tabular-nums text-indigo-700">{{ preview.lojas_criadas }}</div>
+      </div>
+      <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+        <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">Colabs criados</div>
+        <div class="mt-1 text-2xl font-semibold tabular-nums text-emerald-700">{{ preview.colabs_criados }}</div>
+      </div>
+      <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+        <div class="text-xs font-semibold uppercase tracking-wide text-slate-500">Colabs atualizados</div>
+        <div class="mt-1 text-2xl font-semibold tabular-nums text-sky-700">{{ preview.colabs_atualizados }}</div>
+      </div>
+    </div>
+
+    <div class="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div class="rounded-2xl border border-slate-200 bg-white p-4">
+        <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <i class="fa-solid fa-store text-slate-400"></i> Lojas
+        </div>
+        <div class="mt-2 space-y-1 text-sm text-slate-800">
+          <div>Criadas: <span class="font-semibold">{{ preview.lojas_criadas }}</span></div>
+          <div>Região atualizada: <span class="font-semibold">{{ preview.lojas_atualizadas_regiao }}</span></div>
+          <div>Reativadas: <span class="font-semibold">{{ preview.lojas_reativadas }}</span></div>
+          <div>Inativadas: <span class="font-semibold">{{ preview.lojas_inativadas }}</span></div>
+          <div>Ativas no import: <span class="font-semibold">{{ preview.lojas_ativas_importadas }}</span></div>
+        </div>
+      </div>
+
+      <div class="rounded-2xl border border-slate-200 bg-white p-4">
+        <div class="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <i class="fa-solid fa-users text-slate-400"></i> Colaboradores
+        </div>
+        <div class="mt-2 space-y-1 text-sm text-slate-800">
+          <div>Criados: <span class="font-semibold">{{ preview.colabs_criados }}</span></div>
+          <div>Atualizados: <span class="font-semibold">{{ preview.colabs_atualizados }}</span></div>
+          <div>Inativados: <span class="font-semibold">{{ preview.colabs_inativados }}</span></div>
+          <div>Ignorados (STATUS!=ATIVO): <span class="font-semibold">{{ preview.colabs_ignorados_status }}</span></div>
+          <div>Sem loja ativa: <span class="font-semibold">{{ preview.colabs_sem_loja_ativa }}</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-4 rounded-2xl border border-indigo-200 bg-indigo-50 p-4 text-sm text-indigo-800">
+      <div class="flex items-start gap-2">
+        <i class="fa-solid fa-circle-info mt-0.5 text-indigo-500"></i>
+        <p>Dica: se o preview mostrou muitos “inativados”, verifique se a planilha enviada está atualizada e se as abas/colunas estão corretas.</p>
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+</div>
+
+<script>
+  // Estiliza o file input nativo mantendo o comportamento padrao do Django.
+  document.addEventListener("DOMContentLoaded", () => {
+    const input = document.querySelector("input[type='file']");
+    if (input) {
+      if (input.dataset.styled === "1") return;
+      input.dataset.styled = "1";
+      input.classList.add(
+        "block","w-full","text-sm","text-slate-700",
+        "file:mr-4","file:rounded-xl","file:border-0",
+        "file:bg-white","file:px-4","file:py-2.5",
+        "file:text-sm","file:font-semibold","file:text-slate-700","file:ring-1","file:ring-slate-200",
+        "hover:file:bg-slate-50"
+      );
+    }
+  });
+</script>
+{% endblock %}

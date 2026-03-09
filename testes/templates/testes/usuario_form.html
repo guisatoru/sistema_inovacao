@@ -1,0 +1,185 @@
+{% extends "testes/base.html" %}
+
+{% block content %}
+<div class="mx-auto max-w-4xl space-y-5">
+  <!-- Header da pagina -->
+  <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+      <div>
+        <h2 class="text-2xl font-semibold tracking-tight text-slate-900">
+          {% if usuario_edicao %}Editar usuário{% else %}Novo usuário{% endif %}
+        </h2>
+        <p class="mt-1 text-sm text-slate-500">
+          {% if usuario_edicao %}
+            Atualize dados de identificação e perfil de acesso.
+          {% else %}
+            Crie um login para acessar a plataforma e defina as permissões iniciais.
+          {% endif %}
+        </p>
+      </div>
+
+      <a
+        href="{% url 'testes:usuarios_lista' %}"
+        class="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+      >
+        <i class="fa-solid fa-arrow-left"></i>
+        Voltar
+      </a>
+    </div>
+  </div>
+
+  <form method="post" class="space-y-5">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+      <div class="rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
+        {{ form.non_field_errors }}
+      </div>
+    {% endif %}
+
+    <!-- Dados basicos -->
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div class="mb-4">
+        <h3 class="text-base font-semibold text-slate-900">Dados de acesso</h3>
+        <p class="mt-1 text-sm text-slate-500">
+          Defina o login e as informações de identificação do usuário.
+        </p>
+      </div>
+
+      <div class="grid gap-4 md:grid-cols-2">
+        <div class="md:col-span-2">
+          <label for="{{ form.username.id_for_label }}" class="mb-1.5 block text-sm font-semibold text-slate-700">
+            {{ form.username.label }}
+          </label>
+          {{ form.username }}
+          {% if form.username.help_text %}
+            <p class="mt-1 text-xs text-slate-500">{{ form.username.help_text }}</p>
+          {% endif %}
+          {% for error in form.username.errors %}
+            <p class="mt-1 text-xs font-medium text-rose-600">{{ error }}</p>
+          {% endfor %}
+        </div>
+
+        <div>
+          <label for="{{ form.first_name.id_for_label }}" class="mb-1.5 block text-sm font-semibold text-slate-700">
+            {{ form.first_name.label }}
+          </label>
+          {{ form.first_name }}
+          {% for error in form.first_name.errors %}
+            <p class="mt-1 text-xs font-medium text-rose-600">{{ error }}</p>
+          {% endfor %}
+        </div>
+
+        <div>
+          <label for="{{ form.last_name.id_for_label }}" class="mb-1.5 block text-sm font-semibold text-slate-700">
+            {{ form.last_name.label }}
+          </label>
+          {{ form.last_name }}
+          {% for error in form.last_name.errors %}
+            <p class="mt-1 text-xs font-medium text-rose-600">{{ error }}</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    {% if not usuario_edicao %}
+    <!-- Senha -->
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div class="mb-4">
+        <h3 class="text-base font-semibold text-slate-900">Senha</h3>
+        <p class="mt-1 text-sm text-slate-500">
+          A senha é definida no cadastro e pode ser alterada futuramente.
+        </p>
+      </div>
+
+      <div class="grid gap-4 md:grid-cols-2">
+        <div>
+          <label for="{{ form.password1.id_for_label }}" class="mb-1.5 block text-sm font-semibold text-slate-700">
+            {{ form.password1.label }}
+          </label>
+          {{ form.password1 }}
+          {% if form.password1.help_text %}
+            <p class="mt-1 text-xs text-slate-500">{{ form.password1.help_text }}</p>
+          {% endif %}
+          {% for error in form.password1.errors %}
+            <p class="mt-1 text-xs font-medium text-rose-600">{{ error }}</p>
+          {% endfor %}
+        </div>
+
+        <div>
+          <label for="{{ form.password2.id_for_label }}" class="mb-1.5 block text-sm font-semibold text-slate-700">
+            {{ form.password2.label }}
+          </label>
+          {{ form.password2 }}
+          {% for error in form.password2.errors %}
+            <p class="mt-1 text-xs font-medium text-rose-600">{{ error }}</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Perfil -->
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div class="mb-4">
+        <h3 class="text-base font-semibold text-slate-900">Perfil de acesso</h3>
+        <p class="mt-1 text-sm text-slate-500">
+          Escolha um único perfil. O usuário será criado como ativo por padrão.
+        </p>
+      </div>
+
+      <div class="grid gap-3">
+        {% for choice in form.perfil %}
+          <label class="group flex min-h-[60px] cursor-pointer items-center gap-3 rounded-xl border border-slate-200 bg-white px-3 py-3 transition hover:bg-slate-50 has-[:checked]:border-indigo-200 has-[:checked]:bg-indigo-50/40">
+            <span class="inline-flex items-center self-center">
+              {{ choice.tag }}
+            </span>
+
+            <span class="min-w-0">
+              <span class="block text-sm font-semibold text-slate-800">
+                {{ choice.choice_label }}
+              </span>
+              {% if choice.data.value == "usuario" %}
+                <span class="block text-xs text-slate-500">Acesso operacional padrão à plataforma.</span>
+              {% elif choice.data.value == "admin" %}
+                <span class="block text-xs text-slate-500">Acesso total, inclusive gestão de usuários.</span>
+              {% endif %}
+            </span>
+          </label>
+        {% endfor %}
+      </div>
+
+      <div class="mt-2 space-y-1">
+        {% for error in form.perfil.errors %}
+          <p class="text-xs font-medium text-rose-600">{{ error }}</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Acoes -->
+    <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <p class="text-sm text-slate-500">
+          {% if usuario_edicao %}Revise os dados antes de salvar as alterações.{% else %}Revise os dados antes de criar o usuário.{% endif %}
+        </p>
+
+        <div class="flex gap-2">
+          <a
+            href="{% url 'testes:usuarios_lista' %}"
+            class="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+          >
+            Cancelar
+          </a>
+          <button
+            type="submit"
+            class="inline-flex h-10 items-center gap-2 rounded-xl bg-indigo-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 active:translate-y-[1px]"
+          >
+            <i class="fa-solid fa-floppy-disk"></i>
+            {% if usuario_edicao %}Salvar alterações{% else %}Criar usuário{% endif %}
+          </button>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}

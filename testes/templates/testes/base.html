@@ -1,0 +1,428 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Testes para Promoção</title>
+
+    <!-- Flatpickr (datepicker moderno) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/pt.js"></script>
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Font Awesome (ícones) -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+
+    <link rel="stylesheet" href="{% static 'testes/css/ui.css' %}" />
+
+    <!-- Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    >
+
+    <!-- jQuery antes do select2 -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+    {% block extra_head %}{% endblock %}
+
+    <link rel="stylesheet" href="{% static 'testes/css/select2-tailwind.css' %}" />
+
+    <style>
+      .bg-grid-soft {
+        background-image: radial-gradient(
+          circle at 1px 1px,
+          rgba(15, 23, 42, 0.06) 1px,
+          transparent 0
+        );
+        background-size: 26px 26px;
+        mask-image: radial-gradient(ellipse at center, black 55%, transparent 80%);
+        -webkit-mask-image: radial-gradient(ellipse at center, black 55%, transparent 80%);
+      }
+    </style>
+  </head>
+
+  <body
+    class="bg-slate-50 text-slate-900 antialiased"
+    style="font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, 'Apple Color Emoji','Segoe UI Emoji';"
+  >
+    <!-- fundo -->
+    <div class="pointer-events-none fixed inset-0 -z-10">
+      <div class="absolute inset-0 bg-gradient-to-b from-slate-50 via-slate-50 to-slate-100"></div>
+
+      <!-- blobs (mantive, só harmonizei) -->
+      <div class="absolute -top-40 left-1/2 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-indigo-400/18 blur-3xl"></div>
+      <div class="absolute -bottom-48 right-[-120px] h-[520px] w-[520px] rounded-full bg-sky-300/16 blur-3xl"></div>
+      <div class="absolute -bottom-48 left-[-120px] h-[520px] w-[520px] rounded-full bg-emerald-300/12 blur-3xl"></div>
+
+      <div class="absolute inset-0 bg-grid-soft opacity-70"></div>
+    </div>
+
+    <!-- App sidebar (drawer) -->
+    <div
+      id="appSidebarBackdrop"
+      class="fixed inset-0 z-[55] hidden bg-slate-900/30 backdrop-blur-[1px]"
+      data-app-sidebar-close
+    ></div>
+
+    <aside
+      id="appSidebar"
+      class="fixed inset-y-0 left-0 z-[56] w-full max-w-xs -translate-x-full border-r border-slate-200 bg-white/95 shadow-2xl backdrop-blur transition-transform duration-300 ease-out"
+      aria-hidden="true"
+    >
+      <div class="flex h-full flex-col">
+        <div class="flex items-center justify-between border-b border-slate-200 px-4 py-4">
+          <div class="flex items-center gap-2">
+            <div class="inline-flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-100 text-indigo-700">
+              <i class="fa-solid fa-flask text-sm"></i>
+            </div>
+            <div>
+              <div class="text-sm font-semibold text-slate-900">Navegação</div>
+              <div class="text-xs text-slate-500">Módulos da plataforma</div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            data-app-sidebar-close
+            class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
+            aria-label="Fechar menu"
+          >
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <nav class="flex-1 overflow-y-auto p-3">
+          <div class="mb-2 px-2 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+            Principal
+          </div>
+
+          <a
+            href="{% url 'testes:lista' %}"
+            class="mb-1 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition {% if request.resolver_match.url_name == 'lista' or request.resolver_match.url_name == 'novo' or request.resolver_match.url_name == 'detalhe' or request.resolver_match.url_name == 'bulk_promover' or request.resolver_match.url_name == 'bulk_pagar' or request.resolver_match.url_name == 'bulk_cancelar' or request.resolver_match.url_name == 'teste_acao' or request.resolver_match.url_name == 'teste_exportar' %}bg-indigo-50 text-indigo-700 ring-1 ring-indigo-100{% else %}text-slate-700 hover:bg-slate-50{% endif %}"
+          >
+            <i class="fa-solid fa-list-check w-4 text-center {% if request.resolver_match.url_name == 'lista' or request.resolver_match.url_name == 'novo' or request.resolver_match.url_name == 'detalhe' or request.resolver_match.url_name == 'bulk_promover' or request.resolver_match.url_name == 'bulk_pagar' or request.resolver_match.url_name == 'bulk_cancelar' or request.resolver_match.url_name == 'teste_acao' or request.resolver_match.url_name == 'teste_exportar' %}text-indigo-600{% else %}text-slate-400{% endif %}"></i>
+            Testes
+          </a>
+
+          <a
+            href="{% url 'testes:novo' %}"
+            class="mb-1 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+          >
+            <i class="fa-solid fa-plus w-4 text-center text-slate-400"></i>
+            Novo teste
+          </a>
+
+          {% if request.user.is_superuser %}
+          <a
+            href="{% url 'testes:import_gestao_pessoas' %}"
+            class="mb-1 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+          >
+            <i class="fa-solid fa-file-import w-4 text-center text-slate-400"></i>
+            Importar base
+          </a>
+          {% endif %}
+
+          <div class="mt-4 mb-2 px-2 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+            Administração
+          </div>
+
+          {% if request.user.is_superuser %}
+          <a
+            href="{% url 'testes:usuarios_lista' %}"
+            class="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition {% if request.resolver_match.url_name == 'usuarios_lista' or request.resolver_match.url_name == 'usuarios_novo' %}bg-indigo-50 text-indigo-700 ring-1 ring-indigo-100{% else %}text-slate-700 hover:bg-slate-50{% endif %}"
+          >
+            <i class="fa-solid fa-users w-4 text-center {% if request.resolver_match.url_name == 'usuarios_lista' or request.resolver_match.url_name == 'usuarios_novo' %}text-indigo-600{% else %}text-slate-400{% endif %}"></i>
+            Usuários
+          </a>
+          {% endif %}
+        </nav>
+      </div>
+    </aside>
+
+    <div class="mx-auto w-full max-w-7xl px-4 py-6">
+      <!-- HEADER (produto) -->
+      <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <div class="flex items-center gap-3">
+            <button
+              type="button"
+              data-app-sidebar-open
+              class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:bg-slate-50 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-100"
+              aria-label="Abrir menu"
+            >
+              <i class="fa-solid fa-bars"></i>
+            </button>
+
+            <div class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white shadow-sm">
+              <i class="fa-solid fa-flask text-indigo-600"></i>
+            </div>
+
+            <div>
+              <h1 class="text-2xl font-semibold tracking-tight text-slate-900">
+                Testes para Promoção
+              </h1>
+              <p class="text-sm text-slate-500">
+                Controle de testes, prêmios e anexos.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center justify-end gap-2">
+          {% if request.resolver_match.url_name != "novo" %}
+          <a
+            href="{% url 'testes:novo' %}"
+            class="inline-flex h-10 items-center gap-2 rounded-xl bg-indigo-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 active:translate-y-[1px]"
+          >
+            <i class="fa-solid fa-plus"></i> Novo teste
+          </a>
+          {% endif %}
+
+          {% if request.user.is_superuser %}
+          <a
+            href="{% url 'testes:import_gestao_pessoas' %}"
+            class="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 active:translate-y-[1px]"
+          >
+            <i class="fa-solid fa-file-import text-slate-500"></i>
+            Importar
+          </a>
+          {% endif %}
+
+          <details class="group relative">
+            <summary
+              class="flex h-10 cursor-pointer list-none items-center gap-2 rounded-xl border border-slate-200 bg-white px-2.5 text-left shadow-sm transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-indigo-100"
+            >
+              <div
+                class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-xs font-semibold text-indigo-700"
+                data-user-initials
+                data-username="{{ request.user.username }}"
+                data-fullname="{{ request.user.get_full_name }}"
+              >
+                {{ request.user.username|slice:":1"|upper }}
+              </div>
+
+              <div class="hidden min-w-0 md:block">
+                <div class="truncate text-sm font-semibold leading-none text-slate-900">
+                  {{ request.user.get_full_name|default:request.user.username }}
+                </div>
+              </div>
+
+              <div class="hidden lg:block">
+                {% if request.user.is_superuser %}
+                  <span class="inline-flex items-center rounded-full bg-indigo-50 px-2 py-0.5 text-[11px] font-semibold text-indigo-700 ring-1 ring-indigo-200/70">Admin</span>
+                {% elif request.user.is_staff %}
+                  <span class="inline-flex items-center rounded-full bg-sky-50 px-2 py-0.5 text-[11px] font-semibold text-sky-700 ring-1 ring-sky-200/70">Staff</span>
+                {% else %}
+                  <span class="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70">Usuário</span>
+                {% endif %}
+              </div>
+
+              <i class="fa-solid fa-chevron-down ml-1 text-xs text-slate-400 transition duration-200 ease-out group-open:rotate-180 group-open:text-indigo-500"></i>
+            </summary>
+
+            <div class="absolute right-0 top-[calc(100%+10px)] z-50 w-64 origin-top-right rounded-2xl border border-slate-200 bg-white p-2 shadow-xl transition-all duration-200 ease-out motion-reduce:transition-none opacity-0 translate-y-3 scale-95 pointer-events-none group-open:opacity-100 group-open:translate-y-0 group-open:scale-100 group-open:pointer-events-auto group-open:shadow-2xl">
+              <div class="flex items-start gap-3 rounded-xl px-3 py-2">
+                <div
+                  class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-xs font-semibold text-indigo-700"
+                  data-user-initials
+                  data-username="{{ request.user.username }}"
+                  data-fullname="{{ request.user.get_full_name }}"
+                >
+                  {{ request.user.username|slice:":1"|upper }}
+                </div>
+
+                <div class="min-w-0">
+                  <div class="truncate text-sm font-semibold text-slate-900">
+                    {{ request.user.get_full_name|default:request.user.username }}
+                  </div>
+                  <div class="mt-0.5 truncate text-xs text-slate-500">
+                    {{ request.user.username }}
+                  </div>
+                  <div class="mt-1">
+                    {% if request.user.is_superuser %}
+                      <span class="inline-flex items-center rounded-full bg-indigo-50 px-2 py-0.5 text-[11px] font-semibold text-indigo-700 ring-1 ring-indigo-200/70">Admin</span>
+                    {% elif request.user.is_staff %}
+                      <span class="inline-flex items-center rounded-full bg-sky-50 px-2 py-0.5 text-[11px] font-semibold text-sky-700 ring-1 ring-sky-200/70">Staff</span>
+                    {% else %}
+                      <span class="inline-flex items-center rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-semibold text-slate-700 ring-1 ring-slate-200/70">Usuário</span>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+
+              <div class="my-1 h-px bg-slate-100"></div>
+
+              <form method="post" action="{% url 'logout' %}">
+                {% csrf_token %}
+                <button
+                  type="submit"
+                  class="inline-flex w-full items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                >
+                  <i class="fa-solid fa-arrow-right-from-bracket text-slate-500"></i>
+                  Sair
+                </button>
+              </form>
+            </div>
+          </details>
+        </div>
+      </div>
+
+      <!-- TOASTS -->
+      {% if messages %}
+      <div id="toastContainer" class="fixed right-4 top-4 z-[90] space-y-2">
+        {% for m in messages %}
+        <div class="toast">{{ m }}</div>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% block content %}{% endblock %}
+    </div>
+
+    <!-- MODAL -->
+    <div id="appModal" class="modal hidden" aria-hidden="true">
+      <div class="modal-backdrop" data-modal-close></div>
+
+      <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-head">
+          <h3 id="modalTitle" class="modal-title">Confirmar ação</h3>
+        </div>
+
+        <div class="modal-body">
+          <p id="modalMessage" class="modal-msg">Tem certeza?</p>
+
+          <div id="modalObsWrap" class="hidden mt-3">
+            <label class="block text-xs text-slate-600 mb-1">Observação (opcional)</label>
+            <input
+              id="modalObs"
+              type="text"
+              class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:ring-4 focus:ring-indigo-100"
+              placeholder="Ex.: Pago via folha, chamado #123..."
+            />
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-secondary" data-modal-close>Cancelar</button>
+          <button type="button" class="btn-primary" id="modalConfirmBtn">Confirmar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DRAWER -->
+    <div
+      id="drawerBackdrop"
+      class="fixed inset-0 z-[60] hidden bg-slate-900/30 backdrop-blur-[1px]"
+    ></div>
+
+    <aside
+      id="drawer"
+      class="fixed inset-y-0 right-0 z-[70] w-full max-w-xl translate-x-full bg-white/90 backdrop-blur border-l border-slate-200 shadow-2xl transition-transform duration-300
+             flex flex-col h-dvh"
+    >
+      <!-- ✅ header continua fixo porque o scroll vai ser só no content -->
+      <div class="flex items-center justify-between border-b border-slate-200 px-5 py-4 shrink-0">
+        <div class="text-sm font-semibold text-slate-900">Detalhes</div>
+        <button
+          type="button"
+          data-drawer-close
+          class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition"
+        >
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div
+        id="drawerContent"
+        class="p-5 flex-1 overflow-y-auto overscroll-contain"
+        <!-- ✅ agora o drawer rola em telas menores -->
+      >
+        <div class="text-sm text-slate-600">Selecione uma linha para ver os detalhes.</div>
+      </div>
+    </aside>
+
+    <script src="{% static 'testes/js/ui.js' %}"></script>
+    <script src="{% static 'testes/js/drawer.js' %}"></script>
+    <script>
+      // App sidebar drawer toggle.
+      (function () {
+        const sidebar = document.getElementById("appSidebar");
+        const backdrop = document.getElementById("appSidebarBackdrop");
+        const openButtons = document.querySelectorAll("[data-app-sidebar-open]");
+        const closeButtons = document.querySelectorAll("[data-app-sidebar-close]");
+
+        if (!sidebar || !backdrop) return;
+
+        function openSidebar() {
+          backdrop.classList.remove("hidden");
+          sidebar.classList.remove("-translate-x-full");
+          sidebar.setAttribute("aria-hidden", "false");
+          document.body.classList.add("overflow-hidden");
+        }
+
+        function closeSidebar() {
+          sidebar.classList.add("-translate-x-full");
+          sidebar.setAttribute("aria-hidden", "true");
+          backdrop.classList.add("hidden");
+          document.body.classList.remove("overflow-hidden");
+        }
+
+        openButtons.forEach((btn) => btn.addEventListener("click", openSidebar));
+        closeButtons.forEach((btn) => btn.addEventListener("click", closeSidebar));
+
+        document.addEventListener("keydown", (event) => {
+          if (event.key === "Escape" && sidebar.getAttribute("aria-hidden") === "false") {
+            closeSidebar();
+          }
+        });
+
+        // Fecha ao clicar em qualquer link da sidebar.
+        sidebar.querySelectorAll("a").forEach((link) => {
+          link.addEventListener("click", closeSidebar);
+        });
+      })();
+    </script>
+    <script>
+      // Header avatar initials. Prefer username pattern "nome.sobrenome".
+      (function () {
+        function buildInitials(username, fullName) {
+          const user = (username || "").trim();
+          const name = (fullName || "").trim();
+
+          if (user.includes(".")) {
+            const parts = user.split(".").filter(Boolean);
+            if (parts.length >= 2) {
+              return (parts[0][0] + parts[1][0]).toUpperCase();
+            }
+          }
+
+          const source = (name || user).replace(/[._-]+/g, " ").trim();
+          const words = source.split(/\s+/).filter(Boolean);
+
+          if (words.length >= 2) {
+            return (words[0][0] + words[1][0]).toUpperCase();
+          }
+          if (words.length === 1) {
+            return words[0].slice(0, 2).toUpperCase();
+          }
+          return "US";
+        }
+
+        document.querySelectorAll("[data-user-initials]").forEach((el) => {
+          el.textContent = buildInitials(el.dataset.username, el.dataset.fullname);
+        });
+      })();
+    </script>
+    {% block extra_js %}{% endblock %}
+  </body>
+</html>

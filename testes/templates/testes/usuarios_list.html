@@ -1,0 +1,317 @@
+{% extends "testes/base.html" %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css">
+  <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+  <style>
+    /* Tom Select (filtros da lista de usuarios) */
+    .users-filter .ts-wrapper {
+      width: 100%;
+    }
+
+    .users-filter select.ts-hidden-accessible {
+      display: none !important;
+    }
+
+    .users-filter .ts-wrapper.single .ts-control {
+      min-height: 40px;
+      border-radius: 0.75rem;
+      border-color: rgb(226 232 240);
+      box-shadow: none;
+      padding: 0 0.75rem;
+      display: flex;
+      align-items: center;
+      background: #fff;
+    }
+
+    .users-filter .ts-wrapper.single .ts-control input {
+      font-size: 0.875rem;
+      line-height: 1.25rem;
+    }
+
+    .users-filter .ts-wrapper.focus .ts-control {
+      border-color: rgb(199 210 254);
+      box-shadow: 0 0 0 4px rgb(224 231 255);
+    }
+
+    .users-filter .ts-wrapper.single .ts-control .item {
+      font-size: 0.875rem;
+      line-height: 1.25rem;
+      color: rgb(15 23 42);
+    }
+
+    .users-filter .ts-dropdown {
+      border-radius: 0.75rem;
+      border-color: rgb(226 232 240);
+      box-shadow: 0 20px 30px -12px rgba(15, 23, 42, 0.18);
+      margin-top: 0.35rem;
+      overflow: hidden;
+    }
+
+    .users-filter .ts-dropdown .option {
+      font-size: 0.875rem;
+      line-height: 1.25rem;
+      padding: 0.6rem 0.75rem;
+    }
+
+    .users-filter .ts-dropdown .option.active {
+      background: rgb(238 242 255) !important;
+      color: rgb(67 56 202) !important;
+    }
+
+    .users-filter .ts-dropdown .option.selected {
+      background: rgb(79 70 229) !important;
+      color: #fff !important;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="space-y-5">
+  <!-- Header da pagina -->
+  <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <h2 class="text-2xl font-semibold tracking-tight text-slate-900">Usuários</h2>
+        <p class="mt-1 text-sm text-slate-500">
+          Gerencie acessos, status e permissões da plataforma.
+        </p>
+      </div>
+
+      <a
+        href="{% url 'testes:usuarios_novo' %}"
+        class="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 active:translate-y-[1px]"
+      >
+        <i class="fa-solid fa-user-plus"></i>
+        Novo usuário
+      </a>
+    </div>
+  </div>
+
+  <!-- KPIs simples da tela -->
+  <div class="grid grid-cols-2 gap-4 lg:grid-cols-3">
+    <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="text-sm font-medium text-slate-600">Total</div>
+      <div class="mt-2 text-3xl font-semibold tabular-nums text-slate-900">{{ totais.todos }}</div>
+    </div>
+    <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="text-sm font-medium text-slate-600">Ativos</div>
+      <div class="mt-2 text-3xl font-semibold tabular-nums text-emerald-700">{{ totais.ativos }}</div>
+    </div>
+    <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="text-sm font-medium text-slate-600">Admins</div>
+      <div class="mt-2 text-3xl font-semibold tabular-nums text-indigo-700">{{ totais.admins }}</div>
+    </div>
+    <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="text-sm font-medium text-slate-600">Usuários</div>
+      <div class="mt-2 text-3xl font-semibold tabular-nums text-slate-900">{{ totais.usuarios }}</div>
+    </div>
+  </div>
+
+  <!-- Filtros da lista -->
+  <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+    <form method="get" class="users-filter grid gap-3 lg:grid-cols-[minmax(0,1fr)_180px_180px_auto] lg:items-end">
+      <div>
+        <label for="q" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+          Buscar
+        </label>
+        <input
+          id="q"
+          name="q"
+          value="{{ filtros.q }}"
+          type="text"
+          placeholder="Nome ou usuário..."
+          class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none placeholder:text-slate-400 focus:ring-4 focus:ring-indigo-100"
+        />
+      </div>
+
+      <div>
+        <label for="perfil" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+          Perfil
+        </label>
+        <select
+          id="perfil"
+          name="perfil"
+          data-users-filter-select="1"
+          class="w-full"
+        >
+          <option value="">Todos</option>
+          <option value="admin" {% if filtros.perfil == "admin" %}selected{% endif %}>Admin</option>
+          <option value="usuario" {% if filtros.perfil == "usuario" %}selected{% endif %}>Usuário</option>
+        </select>
+      </div>
+
+      <div>
+        <label for="status" class="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
+          Status
+        </label>
+        <select
+          id="status"
+          name="status"
+          data-users-filter-select="1"
+          class="w-full"
+        >
+          <option value="">Todos</option>
+          <option value="ativo" {% if filtros.status == "ativo" %}selected{% endif %}>Ativo</option>
+          <option value="inativo" {% if filtros.status == "inativo" %}selected{% endif %}>Inativo</option>
+        </select>
+      </div>
+
+      <div class="flex gap-2">
+        <button
+          type="submit"
+          class="inline-flex h-10 items-center gap-2 rounded-xl bg-indigo-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"
+        >
+          <i class="fa-solid fa-filter"></i>
+          Aplicar
+        </button>
+        <a
+          href="{% url 'testes:usuarios_lista' %}"
+          class="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50"
+        >
+          Limpar
+        </a>
+      </div>
+    </form>
+  </div>
+
+  <!-- Tabela de usuarios -->
+  <div class="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <table class="min-w-full text-sm">
+      <thead class="border-b border-slate-200 bg-slate-50">
+        <tr class="text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <th class="px-4 py-3">Usuário</th>
+          <th class="px-4 py-3">Nome</th>
+          <th class="px-4 py-3">Perfil</th>
+          <th class="px-4 py-3">Status</th>
+          <th class="px-4 py-3 text-right">Ações</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        {% for u in usuarios %}
+        <tr class="transition-colors hover:bg-slate-50">
+          <td class="px-4 py-4 align-middle">
+            <div class="flex items-center gap-3">
+              <div
+                class="inline-flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-xs font-semibold text-indigo-700"
+                data-user-initials
+                data-username="{{ u.username }}"
+                data-fullname="{{ u.get_full_name }}"
+              >
+                {{ u.username|slice:":1"|upper }}
+              </div>
+              <div class="min-w-0">
+                <div class="truncate font-semibold text-slate-900">{{ u.username }}</div>
+              </div>
+            </div>
+          </td>
+
+          <td class="px-4 py-4 align-middle text-slate-700">
+            {% if u.get_full_name %}
+              {{ u.get_full_name }}
+            {% else %}
+              <span class="text-slate-400">Não informado</span>
+            {% endif %}
+          </td>
+
+          <td class="px-4 py-4 align-middle">
+            <div class="flex flex-wrap gap-1.5">
+              {% if u.is_superuser %}
+                <span class="inline-flex items-center rounded-full bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700">Admin</span>
+              {% else %}
+                <span class="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">Usuário</span>
+              {% endif %}
+            </div>
+          </td>
+
+          <td class="px-4 py-4 align-middle">
+            {% if u.is_active %}
+              <span class="inline-flex items-center rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                Ativo
+              </span>
+            {% else %}
+              <span class="inline-flex items-center rounded-full bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700">
+                Inativo
+              </span>
+            {% endif %}
+          </td>
+
+          <td class="px-4 py-4 align-middle text-right">
+            <div class="inline-flex items-center gap-2">
+              {% if u.pk == request.user.pk %}
+                <span class="inline-flex items-center rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-400">
+                  Usuário atual
+                </span>
+              {% else %}
+                <form method="post" action="{% url 'testes:usuarios_toggle_ativo' u.pk %}" class="inline">
+                  {% csrf_token %}
+                  <button
+                    type="submit"
+                    data-confirm-form="{% if u.is_active %}Desativar o usuário {{ u.username }}?{% else %}Ativar o usuário {{ u.username }}?{% endif %}"
+                    data-confirm-title="{% if u.is_active %}Desativar usuário{% else %}Ativar usuário{% endif %}"
+                    class="inline-flex items-center rounded-xl border px-3 py-1.5 text-xs font-semibold transition {% if u.is_active %}border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100{% else %}border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100{% endif %}"
+                  >
+                    {% if u.is_active %}
+                      Desativar
+                    {% else %}
+                      Ativar
+                    {% endif %}
+                  </button>
+                </form>
+              {% endif %}
+
+              <a
+                href="{% url 'testes:usuarios_editar' u.pk %}"
+                class="inline-flex items-center rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+              >
+                Editar
+              </a>
+              <a
+                href="{% url 'testes:usuarios_reset_senha' u.pk %}"
+                class="inline-flex items-center rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:bg-slate-50"
+              >
+                Senha
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" class="px-4 py-8 text-center text-slate-500">
+            Nenhum usuário encontrado com esses filtros.
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+  <script>
+    (function () {
+      if (typeof window.TomSelect === "undefined") return;
+
+      document.querySelectorAll("[data-users-filter-select='1']").forEach((el) => {
+        if (el.tomselect) return;
+
+        new TomSelect(el, {
+          create: false,
+          allowEmptyOption: true,
+          maxItems: 1,
+          copyClassesToDropdown: false,
+          controlInput: null,
+          render: {
+            option: function (data, escape) {
+              return "<div>" + escape(data.text || "") + "</div>";
+            },
+            item: function (data, escape) {
+              return "<div>" + escape(data.text || "") + "</div>";
+            }
+          }
+        });
+      });
+    })();
+  </script>
+{% endblock %}

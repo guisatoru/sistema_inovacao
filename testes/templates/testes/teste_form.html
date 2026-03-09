@@ -1,0 +1,781 @@
+{% extends "testes/base.html" %}
+
+{% block extra_head %}
+  {{ form.media }}
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css">
+  <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+  <style>
+    /* Tom Select (somente para Loja/Colaborador) alinhado ao tema */
+    .ts-wrapper.single .ts-control {
+      min-height: 44px;
+      border-radius: 0.75rem;
+      border: 1px solid rgb(226 232 240);
+      box-shadow: none;
+      padding: 0 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      background: #fff;
+    }
+    .ts-wrapper.single {
+      border: 0 !important;
+      padding: 0 !important;
+      background: transparent !important;
+      box-shadow: none !important;
+    }
+    .ts-wrapper.focus .ts-control {
+      border-color: rgb(99 102 241);
+      box-shadow: 0 0 0 4px rgb(224 231 255);
+    }
+    .ts-wrapper.single .ts-control .item {
+      line-height: 1.25rem;
+      padding: 0;
+      margin: 0;
+      color: rgb(15 23 42);
+    }
+    .ts-wrapper.single .ts-control input {
+      line-height: 1.25rem !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+    .ts-wrapper.single .ts-control::after {
+      margin-top: 0 !important;
+      right: 0.75rem !important;
+    }
+    .ts-wrapper .ts-dropdown {
+      border: 1px solid rgb(226 232 240);
+      border-radius: 0.9rem;
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.14);
+      overflow: hidden;
+    }
+    .ts-wrapper .option,
+    .ts-wrapper .create {
+      border-radius: 0.75rem;
+      margin: 0.2rem 0.35rem;
+      padding: 0.65rem 0.75rem;
+    }
+    .ts-wrapper .active {
+      background: rgb(224 231 255);
+      color: rgb(49 46 129);
+    }
+    .ts-wrapper .selected {
+      background: rgb(199 210 254);
+      color: rgb(49 46 129);
+      font-weight: 600;
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+<div class="mx-auto w-full max-w-6xl">
+
+  <!-- Fluxo da tela: cabecalho -> validacoes -> formulario -> resumo -> acoes finais -->
+  <!-- Header de acoes -->
+  <div class="mb-5 rounded-2xl border border-slate-200/70 bg-white p-4 shadow-sm">
+    <div>
+      <h2 class="text-2xl font-semibold tracking-tight text-slate-900">Cadastrar teste</h2>
+      <p class="mt-1 text-sm text-slate-500">Preencha os dados do colaborador e os detalhes do teste.</p>
+    </div>
+  </div>
+
+  {% if form.non_field_errors %}
+    <div class="mb-4 rounded-2xl bg-rose-50 p-4 text-sm text-rose-800 ring-1 ring-rose-200/60">
+      <div class="font-semibold">Não foi possível salvar</div>
+      <div class="mt-1">{{ form.non_field_errors|striptags }}</div>
+    </div>
+  {% endif %}
+
+  <form id="testeForm" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <div class="grid grid-cols-1 gap-6 xl:grid-cols-12 xl:items-start">
+      <!-- Coluna esquerda (2/3) -->
+      <div class="space-y-6 xl:col-span-8">
+
+        <!-- Card 1: Dados do colaborador -->
+        <section class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60">
+          <div class="mb-4">
+            <h3 class="text-sm font-medium text-slate-600">Dados do colaborador</h3>
+            <p class="mt-1 text-sm text-slate-500">Informações básicas e vínculo com loja/solicitante.</p>
+          </div>
+
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <!-- Loja - primeiro -->
+            <div class="sm:col-span-2">
+              <label for="{{ form.loja.id_for_label }}" class="text-sm font-medium text-slate-600">Loja</label>
+              <div class="mt-1">
+                {{ form.loja }}
+              </div>
+              {% if form.loja.errors %}
+                <p class="mt-1 text-sm text-rose-700">{{ form.loja.errors|striptags }}</p>
+              {% endif %}
+            </div>
+
+            <!-- Quadro da loja (dinamico conforme loja selecionada) -->
+            <div id="lojaQuadroCard" class="sm:col-span-2 hidden rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+              <div class="flex items-center justify-between gap-3">
+                <div>
+                  <div class="text-sm font-semibold text-slate-900">Quadro da loja</div>
+                  <div id="lojaQuadroTitulo" class="text-xs text-slate-500">Selecione uma loja para visualizar o quadro.</div>
+                </div>
+                <div id="lojaQuadroBadge" class="hidden rounded-full px-2.5 py-1 text-xs font-semibold"></div>
+              </div>
+
+              <div class="mt-3 grid grid-cols-2 gap-3">
+                <div class="rounded-xl bg-white px-3 py-2 ring-1 ring-slate-200/60">
+                  <div class="text-xs font-medium text-slate-500">Quadro contratado</div>
+                  <div id="lojaQuadroContratado" class="mt-1 text-lg font-semibold tabular-nums text-slate-900">0</div>
+                </div>
+                <div class="rounded-xl bg-white px-3 py-2 ring-1 ring-slate-200/60">
+                  <div class="text-xs font-medium text-slate-500">Ativos na loja</div>
+                  <div id="lojaQuadroAtivos" class="mt-1 text-lg font-semibold tabular-nums text-slate-900">0</div>
+                </div>
+              </div>
+
+              <div class="mt-3 rounded-xl bg-white px-3 py-3 ring-1 ring-slate-200/60">
+                <div class="mb-2 flex items-center justify-between text-xs">
+                  <span class="font-semibold uppercase tracking-wide text-slate-500">Ocupação da loja</span>
+                  <span id="lojaQuadroOcupacaoTexto" class="font-semibold tabular-nums text-slate-700">0/0</span>
+                </div>
+                <div class="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                  <div id="lojaQuadroOcupacaoBarra" class="h-full w-0 rounded-full bg-indigo-600 transition-all duration-300"></div>
+                </div>
+              </div>
+
+              <div class="mt-3">
+                <div class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">Por função</div>
+                <div id="lojaQuadroFuncoes" class="max-h-48 space-y-2 overflow-auto pr-1"></div>
+                <div id="lojaQuadroFuncoesVazio" class="hidden rounded-xl bg-white px-3 py-2 text-sm text-slate-500 ring-1 ring-slate-200/60">
+                  Nenhum colaborador ativo encontrado para esta loja.
+                </div>
+              </div>
+            </div>
+
+            <!-- Funcao do teste (vem antes para filtrar colaboradores) -->
+            <div class="sm:col-span-2">
+              <label for="{{ form.funcao.id_for_label }}" class="text-sm font-medium text-slate-600">Função</label>
+              <div class="mt-1">
+                {{ form.funcao }}
+              </div>
+              <p class="mt-1 text-xs text-slate-500">A lista de colaboradores oculta quem já está nesta função.</p>
+              {% if form.funcao.errors %}
+                <p class="mt-1 text-sm text-rose-700">{{ form.funcao.errors|striptags }}</p>
+              {% endif %}
+            </div>
+
+            <!-- Colaborador (nome) - filtrado por loja e funcao -->
+            <div class="sm:col-span-2">
+              <label for="{{ form.colaborador.id_for_label }}" class="text-sm font-medium text-slate-600">Colaborador</label>
+              <div class="mt-1">
+                {{ form.colaborador }}
+              </div>
+              {% if form.colaborador.errors %}
+                <p class="mt-1 text-sm text-rose-700">{{ form.colaborador.errors|striptags }}</p>
+              {% endif %}
+            </div>
+
+            <!-- RE -->
+            <div class="sm:col-span-2">
+              <div class="grid grid-cols-1 gap-4 sm:grid-cols-[220px_1fr] sm:items-start">
+                <!-- RE (medio) -->
+                <div>
+                  <label for="{{ form.colaborador_re.id_for_label }}" class="text-sm font-medium text-slate-600">RE</label>
+                  <div class="mt-1">
+                    {{ form.colaborador_re }}
+                  </div>
+                  <p class="mt-1 text-xs text-slate-500">Preenchido automaticamente.</p>
+                  {% if form.colaborador_re.errors %}
+                    <p class="mt-1 text-sm text-rose-700">{{ form.colaborador_re.errors|striptags }}</p>
+                  {% endif %}
+                </div>
+
+                <div class="hidden sm:block"></div>
+              </div>
+            </div>
+
+            <!-- Solicitante -->
+            <div class="sm:col-span-2">
+              <label for="{{ form.solicitante.id_for_label }}" class="text-sm font-medium text-slate-600">Solicitante</label>
+              <div class="mt-1">
+                {{ form.solicitante }}
+              </div>
+              {% if form.solicitante.errors %}
+                <p class="mt-1 text-sm text-rose-700">{{ form.solicitante.errors|striptags }}</p>
+              {% endif %}
+            </div>
+          </div>
+        </section>
+
+        <!-- Card 2: Detalhes do teste -->
+        <section class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60">
+          <div class="mb-4">
+            <h3 class="text-sm font-medium text-slate-600">Detalhes do teste</h3>
+            <p class="mt-1 text-sm text-slate-500">Data de início, anexo e observações internas.</p>
+          </div>
+
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <!-- Data inicio -->
+            <div>
+              <label for="{{ form.data_inicio.id_for_label }}" class="text-sm font-medium text-slate-600">Data início</label>
+              <div class="mt-1">
+                {{ form.data_inicio }}
+              </div>
+              {% if form.data_inicio.errors %}
+                <p class="mt-1 text-sm text-rose-700">{{ form.data_inicio.errors|striptags }}</p>
+              {% endif %}
+            </div>
+
+            <div class="hidden sm:block"></div>
+
+            <!-- Dropzone: Anexo -->
+            <div class="sm:col-span-2">
+              <label class="text-sm font-medium text-slate-600">Anexo (folha do teste)</label>
+
+              <div class="mt-1">
+                <div id="dropzone"
+                     class="group relative flex min-h-[120px] cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-slate-300 bg-slate-50/60 p-5 text-center
+                            hover:bg-slate-50 hover:border-slate-400 transition"
+                >
+                  <div class="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-50 ring-1 ring-indigo-200/60">
+                    <i class="fa-solid fa-paperclip text-indigo-600"></i>
+                  </div>
+
+                  <div class="text-sm text-slate-700">
+                    <span class="font-semibold text-indigo-600">Arraste</span> o arquivo aqui ou
+                    <span class="font-semibold text-indigo-600">clique</span> para anexar
+                  </div>
+                  <div class="text-xs text-slate-500">PDF, imagem ou documento.</div>
+
+                  <!-- Meta -->
+                  <div id="fileMeta" class="mt-2 hidden w-full rounded-xl bg-white px-3 py-2 text-left text-sm ring-1 ring-slate-200/60">
+                    <div class="flex items-center justify-between gap-3">
+                      <div class="min-w-0">
+                        <div class="text-xs text-slate-500">Arquivo selecionado</div>
+                        <div id="fileName" class="truncate font-medium text-slate-900"></div>
+                      </div>
+
+                      <button
+                        id="fileRemove"
+                        type="button"
+                        class="rounded-xl px-3 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-50 ring-1 ring-rose-200/60"
+                      >
+                        Remover
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Input real (hidden) -->
+                  <div class="hidden">
+                    {{ form.anexo_folha_teste }}
+                  </div>
+                </div>
+
+                {% if form.anexo_folha_teste.errors %}
+                  <p class="mt-1 text-sm text-rose-700">{{ form.anexo_folha_teste.errors|striptags }}</p>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Observacoes -->
+            <div class="sm:col-span-2">
+              <label for="{{ form.observacoes.id_for_label }}" class="text-sm font-medium text-slate-600">Observações</label>
+              <div class="mt-1">
+                {{ form.observacoes }}
+              </div>
+              {% if form.observacoes.errors %}
+                <p class="mt-1 text-sm text-rose-700">{{ form.observacoes.errors|striptags }}</p>
+              {% endif %}
+            </div>
+          </div>
+        </section>
+
+        <section class="hidden rounded-2xl bg-white p-4 shadow-sm ring-1 ring-slate-200/60 sm:block">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <div class="text-sm text-slate-500">
+              Revise os dados antes de salvar.
+            </div>
+
+            <div class="flex items-center gap-2">
+              <a
+                href="{% url 'testes:lista' %}"
+                class="rounded-xl px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100"
+              >
+                Voltar
+              </a>
+
+              <button
+                type="submit"
+                class="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-100 active:translate-y-[1px]"
+              >
+                Salvar teste
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Coluna direita (1/3) - Resumo -->
+      <aside class="space-y-6 xl:col-span-4 xl:sticky xl:top-24">
+        <div class="rounded-2xl bg-white p-6 shadow-sm ring-1 ring-slate-200/60">
+          <div class="mb-4">
+            <h3 class="text-sm font-medium text-slate-600">Resumo</h3>
+            <p class="mt-1 text-sm text-slate-500">Prévia do estado inicial do teste.</p>
+          </div>
+
+          <div class="space-y-3 text-sm">
+            <div class="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2 ring-1 ring-slate-200/60">
+              <span class="text-slate-600">Status inicial</span>
+              <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-semibold bg-amber-50 text-amber-700 ring-1 ring-amber-200/60">
+                Em andamento
+              </span>
+            </div>
+
+            <div class="flex items-center justify-between rounded-xl bg-slate-50 px-3 py-2 ring-1 ring-slate-200/60">
+              <span class="text-slate-600">Prêmios</span>
+              <span class="font-semibold tabular-nums text-slate-900">0/3</span>
+            </div>
+
+            <div class="rounded-xl bg-indigo-50 px-3 py-2 ring-1 ring-indigo-200/60">
+              <div class="text-xs font-semibold text-indigo-700">Regras</div>
+              <ul class="mt-1 space-y-1 text-sm text-slate-700">
+                <li>• Ao pagar prêmio, observação será obrigatória.</li>
+                <li>• Promoção/Cancelamento também pedem observação.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Footer sticky (mobile) com acoes repetidas -->
+    <div class="mt-6 lg:hidden">
+      <div class="sticky bottom-3 z-10">
+        <div class="rounded-2xl bg-white/85 p-3 shadow-sm ring-1 ring-slate-200/60 backdrop-blur">
+          <div class="flex items-center justify-between gap-3">
+            <a
+              href="{% url 'testes:lista' %}"
+              class="rounded-xl px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100"
+            >
+              Voltar
+            </a>
+
+            <button
+              type="submit"
+              class="rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-100 active:translate-y-[1px]"
+            >
+              Salvar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </form>
+</div>
+
+<script>
+  (function () {
+    // Aplica visual consistente aos widgets do Django/Select2 sem alterar o form backend.
+    function applyFieldStyles() {
+      const form = document.getElementById("testeForm");
+      if (!form) return;
+
+      form.querySelectorAll("input:not([type='file']):not([type='hidden']):not([type='checkbox']), select:not([data-combobox])").forEach((el) => {
+        el.classList.add(
+          "h-11","w-full","rounded-xl","border","border-slate-200","bg-white","px-3",
+          "text-sm","text-slate-900","placeholder:text-slate-400",
+          "focus:outline-none","focus:border-indigo-500","focus:ring-4","focus:ring-indigo-100"
+        );
+      });
+
+      form.querySelectorAll("textarea").forEach((el) => {
+        el.classList.add(
+          "min-h-[110px]","w-full","rounded-xl","border","border-slate-200","bg-white",
+          "px-3","py-2","text-sm","text-slate-900","placeholder:text-slate-400",
+          "focus:outline-none","focus:border-indigo-500","focus:ring-4","focus:ring-indigo-100"
+        );
+      });
+
+      // RE readonly com cara de readonly
+      const re = form.querySelector("#id_colaborador_re");
+      if (re) {
+        re.classList.add("bg-slate-50");
+      }
+    }
+
+    function styleSelect2() {
+      const containers = document.querySelectorAll(".select2-container");
+      containers.forEach(c => (c.style.width = "100%"));
+    }
+
+    function initDatepicker() {
+        if (!window.flatpickr) return;
+
+        window.flatpickr("[data-flatpickr='1']", {
+          dateFormat: "d/m/Y",
+          allowInput: true,
+          locale: "pt",
+        });
+    }
+
+    function initTomSelectCadastro() {
+      if (typeof window.TomSelect === "undefined") return false;
+
+      const lojaEl = document.getElementById("id_loja");
+      const colabEl = document.getElementById("id_colaborador");
+      const solicitanteEl = document.getElementById("id_solicitante");
+      const funcaoEl = document.getElementById("id_funcao");
+      const reEl = document.getElementById("id_colaborador_re");
+      const lojaQuadroCard = document.getElementById("lojaQuadroCard");
+      const lojaQuadroTitulo = document.getElementById("lojaQuadroTitulo");
+      const lojaQuadroBadge = document.getElementById("lojaQuadroBadge");
+      const lojaQuadroContratado = document.getElementById("lojaQuadroContratado");
+      const lojaQuadroAtivos = document.getElementById("lojaQuadroAtivos");
+      const lojaQuadroOcupacaoTexto = document.getElementById("lojaQuadroOcupacaoTexto");
+      const lojaQuadroOcupacaoBarra = document.getElementById("lojaQuadroOcupacaoBarra");
+      const lojaQuadroFuncoes = document.getElementById("lojaQuadroFuncoes");
+      const lojaQuadroFuncoesVazio = document.getElementById("lojaQuadroFuncoesVazio");
+      if (!lojaEl || !colabEl) return false;
+      if (!lojaEl.dataset.combobox || !colabEl.dataset.combobox) return false;
+
+      const commonConfig = {
+        create: false,
+        maxItems: 1,
+        preload: true,
+        allowEmptyOption: true,
+        closeAfterSelect: true,
+        placeholder: "",
+        render: {
+          no_results(data, escape) {
+            return `<div class="px-3 py-2 text-sm text-slate-500">Nenhum resultado para "${escape(data.input)}".</div>`;
+          },
+          loading() {
+            return '<div class="px-3 py-2 text-sm text-slate-500">Buscando...</div>';
+          },
+        },
+      };
+
+      function createRemoteCombobox(el, url, extraConfig = {}) {
+        if (!el || !el.dataset.combobox) return null;
+
+        const ts = new TomSelect(el, {
+          ...commonConfig,
+          valueField: "id",
+          labelField: "text",
+          searchField: "text",
+          placeholder: el.dataset.placeholder || "",
+          load(query, callback) {
+            fetch(`${url}?q=${encodeURIComponent(query || "")}`, {
+              credentials: "same-origin",
+              headers: { "X-Requested-With": "XMLHttpRequest" },
+            })
+              .then((r) => r.json())
+              .then((data) => callback(data.results || []))
+              .catch(() => callback());
+          },
+          ...extraConfig,
+        });
+
+        ts.removeOption("");
+        return ts;
+      }
+
+      const lojaTs = createRemoteCombobox(lojaEl, "{% url 'testes:api_lojas' %}", {
+        placeholder: lojaEl.dataset.placeholder || "Selecione a loja...",
+      });
+      const solicitanteTs = createRemoteCombobox(solicitanteEl, "{% url 'testes:api_solicitantes' %}", {
+        placeholder: solicitanteEl?.dataset?.placeholder || "Selecione o solicitante...",
+      });
+      const funcaoTs = createRemoteCombobox(funcaoEl, "{% url 'testes:api_funcoes' %}", {
+        placeholder: funcaoEl?.dataset?.placeholder || "Selecione a função...",
+      });
+
+      const colabTs = new TomSelect(colabEl, {
+        ...commonConfig,
+        valueField: "id",
+        labelField: "text",
+        searchField: ["text", "re"],
+        placeholder: colabEl.dataset.placeholder || "Selecione o colaborador...",
+        load(query, callback) {
+          const lojaId = lojaTs.getValue();
+          if (!lojaId) {
+            callback([]);
+            return;
+          }
+
+          const funcaoId = funcaoTs && funcaoTs.getValue ? funcaoTs.getValue() : "";
+          let url = `{% url 'testes:api_colaboradores' %}?loja_id=${encodeURIComponent(lojaId)}&q=${encodeURIComponent(query || "")}`;
+          if (funcaoId) {
+            url += `&funcao_id=${encodeURIComponent(funcaoId)}`;
+          }
+          fetch(url, {
+            credentials: "same-origin",
+            headers: { "X-Requested-With": "XMLHttpRequest" },
+          })
+            .then((r) => r.json())
+            .then((data) => callback(data.results || []))
+            .catch(() => callback());
+        },
+      });
+      colabTs.removeOption("");
+
+      function renderLojaQuadro(data) {
+        if (!lojaQuadroCard || !data) return;
+
+        lojaQuadroCard.classList.remove("hidden");
+        lojaQuadroTitulo.textContent = `${data.loja.nome} • ${data.loja.regiao}`;
+        lojaQuadroContratado.textContent = String(data.quadro_contratado ?? 0);
+        lojaQuadroAtivos.textContent = String(data.ativos_total ?? 0);
+
+        const quadro = Number(data.quadro_contratado || 0);
+        const ativos = Number(data.ativos_total || 0);
+        const pct = quadro > 0 ? Math.round((ativos / quadro) * 100) : 0;
+        const pctClamped = Math.max(0, Math.min(100, pct));
+        if (lojaQuadroOcupacaoTexto) {
+          lojaQuadroOcupacaoTexto.textContent = quadro > 0 ? `${ativos}/${quadro} (${pct}%)` : `${ativos}/0`;
+        }
+        if (lojaQuadroOcupacaoBarra) {
+          lojaQuadroOcupacaoBarra.style.width = `${pctClamped}%`;
+          lojaQuadroOcupacaoBarra.classList.remove("bg-indigo-600", "bg-amber-500", "bg-rose-500");
+          if (quadro > 0 && ativos > quadro) lojaQuadroOcupacaoBarra.classList.add("bg-rose-500");
+          else if (quadro > 0 && ativos === quadro) lojaQuadroOcupacaoBarra.classList.add("bg-amber-500");
+          else lojaQuadroOcupacaoBarra.classList.add("bg-indigo-600");
+        }
+
+        const diferenca = Number(data.diferenca_quadro || 0);
+        lojaQuadroBadge.classList.remove("hidden");
+        lojaQuadroBadge.className = "rounded-full px-2.5 py-1 text-xs font-semibold";
+        if (diferenca >= 0) {
+          lojaQuadroBadge.classList.add("bg-emerald-50", "text-emerald-700");
+          lojaQuadroBadge.textContent = `Saldo +${diferenca}`;
+        } else {
+          lojaQuadroBadge.classList.add("bg-rose-50", "text-rose-700");
+          lojaQuadroBadge.textContent = `Déficit ${diferenca}`;
+        }
+
+        const funcaoSelecionadaId = funcaoTs && funcaoTs.getValue ? String(funcaoTs.getValue() || "") : "";
+        lojaQuadroFuncoes.innerHTML = "";
+
+        const lista = Array.isArray(data.por_funcao) ? data.por_funcao : [];
+        if (!lista.length) {
+          lojaQuadroFuncoesVazio.classList.remove("hidden");
+          return;
+        }
+
+        lojaQuadroFuncoesVazio.classList.add("hidden");
+        lista.forEach((item) => {
+          const isCurrentFunc = funcaoSelecionadaId && String(item.funcao_id || "") === funcaoSelecionadaId;
+          const row = document.createElement("div");
+          row.className = "flex items-center justify-between rounded-xl px-3 py-2 text-sm ring-1 " +
+            (isCurrentFunc
+              ? "bg-indigo-50 text-indigo-800 ring-indigo-200"
+              : "bg-white text-slate-700 ring-slate-200/60");
+          row.innerHTML = `
+            <div class="min-w-0 truncate ${isCurrentFunc ? "font-semibold" : ""}">${item.funcao}</div>
+            <div class="ml-3 font-semibold tabular-nums ${isCurrentFunc ? "text-indigo-700" : "text-slate-900"}">${item.total}</div>
+          `;
+          lojaQuadroFuncoes.appendChild(row);
+        });
+      }
+
+      function clearLojaQuadro() {
+        if (!lojaQuadroCard) return;
+        lojaQuadroCard.classList.add("hidden");
+        if (lojaQuadroFuncoes) lojaQuadroFuncoes.innerHTML = "";
+        lojaQuadroFuncoesVazio?.classList.add("hidden");
+        lojaQuadroBadge?.classList.add("hidden");
+        if (lojaQuadroOcupacaoTexto) lojaQuadroOcupacaoTexto.textContent = "0/0";
+        if (lojaQuadroOcupacaoBarra) {
+          lojaQuadroOcupacaoBarra.style.width = "0%";
+          lojaQuadroOcupacaoBarra.classList.remove("bg-amber-500", "bg-rose-500");
+          lojaQuadroOcupacaoBarra.classList.add("bg-indigo-600");
+        }
+      }
+
+      function refreshLojaQuadro() {
+        const lojaId = lojaTs.getValue();
+        if (!lojaId) {
+          clearLojaQuadro();
+          return;
+        }
+
+        fetch(`{% url 'testes:api_loja_quadro' 0 %}`.replace("/0/", `/${encodeURIComponent(lojaId)}/`), {
+          credentials: "same-origin",
+          headers: { "X-Requested-With": "XMLHttpRequest" },
+        })
+          .then((r) => (r.ok ? r.json() : Promise.reject()))
+          .then((data) => renderLojaQuadro(data))
+          .catch(() => clearLojaQuadro());
+      }
+
+      function syncColabEnabledState() {
+        const hasLoja = !!lojaTs.getValue();
+        if (hasLoja) colabTs.enable();
+        else colabTs.disable();
+      }
+
+      function clearColaborador() {
+        colabTs.clear(true);
+        colabTs.clearOptions();
+        if (reEl) reEl.value = "";
+      }
+
+      function selectedColaboradorEstaNaFuncaoAlvo() {
+        const value = colabTs.getValue();
+        if (!value || !funcaoTs) return false;
+        const alvoFuncaoId = String(funcaoTs.getValue() || "");
+        if (!alvoFuncaoId) return false;
+        const opt = colabTs.options[value];
+        return !!(opt && String(opt.funcao_id || "") === alvoFuncaoId);
+      }
+
+      syncColabEnabledState();
+
+      lojaTs.on("change", () => {
+        clearColaborador();
+        syncColabEnabledState();
+        refreshLojaQuadro();
+        if (lojaTs.getValue()) {
+          colabTs.load("");
+        }
+      });
+
+      if (funcaoTs) {
+        funcaoTs.on("change", () => {
+          // Re-render highlighting da funcao selecionada.
+          refreshLojaQuadro();
+
+          // Se a funcao-alvo mudou e o colaborador atual ficou invalido, limpa selecao.
+          if (selectedColaboradorEstaNaFuncaoAlvo()) {
+            clearColaborador();
+          }
+
+          // Recarrega opcoes para aplicar novo filtro de funcao.
+          if (lojaTs.getValue()) {
+            colabTs.clearOptions();
+            colabTs.load("");
+          }
+        });
+      }
+
+      colabTs.on("change", (value) => {
+        if (!reEl) return;
+        const opt = value ? colabTs.options[value] : null;
+        reEl.value = opt && opt.re ? String(opt.re) : "";
+      });
+
+      // evita lint/otimizadores removerem instancias; tambem facilita debug no browser
+      window._cadastroComboboxes = { lojaTs, colabTs, solicitanteTs, funcaoTs };
+
+      // Se a tela abrir com loja preselecionada (edicao futura), carrega o quadro.
+      refreshLojaQuadro();
+
+      return true;
+    }
+
+    function wireColaboradorAutoFill() {
+      // precisa do jQuery porque select2 usa jQuery events
+      if (typeof window.jQuery === "undefined") return;
+
+      const $loja = window.jQuery("#id_loja");
+      const $colab = window.jQuery("#id_colaborador");
+      const $re = window.jQuery("#id_colaborador_re");
+
+      if (!$loja.length || !$colab.length) return;
+
+      function clearColab() {
+        if ($colab.length) $colab.val(null).trigger("change");
+        if ($re.length) $re.val("");
+      }
+
+      // Quando troca a loja, limpa colaborador e RE
+      $loja.on("change", clearColab);
+
+      // Quando seleciona colaborador, pega o RE do texto "Nome - RE 123"
+      $colab.on("select2:select", function (e) {
+        const data = e.params && e.params.data ? e.params.data : null;
+        const text = (data && data.text) ? data.text : "";
+
+        const match = text.match(/RE\s+(\d+)/i);
+        const reVal = match ? match[1] : "";
+
+        if ($re.length) $re.val(reVal);
+      });
+
+      // Se limpar o colaborador
+      $colab.on("select2:clear", function () {
+        if ($re.length) $re.val("");
+      });
+    }
+
+    function initDropzone() {
+      const dz = document.getElementById("dropzone");
+      if (!dz) return;
+
+      const fileInput = dz.querySelector("input[type='file']");
+      const meta = document.getElementById("fileMeta");
+      const nameEl = document.getElementById("fileName");
+      const removeBtn = document.getElementById("fileRemove");
+      if (!fileInput || !meta || !nameEl || !removeBtn) return;
+
+      dz.addEventListener("click", (e) => {
+        if (e.target.closest("#fileRemove")) return;
+        fileInput.click();
+      });
+
+      function setFileUI(file) {
+        if (!file) {
+          meta.classList.add("hidden");
+          nameEl.textContent = "";
+          return;
+        }
+        meta.classList.remove("hidden");
+        nameEl.textContent = file.name;
+      }
+
+      fileInput.addEventListener("change", () => {
+        setFileUI(fileInput.files && fileInput.files[0] ? fileInput.files[0] : null);
+      });
+
+      removeBtn.addEventListener("click", () => {
+        fileInput.value = "";
+        setFileUI(null);
+      });
+
+      dz.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        dz.classList.add("border-indigo-300", "bg-indigo-50/40");
+      });
+
+      dz.addEventListener("dragleave", () => {
+        dz.classList.remove("border-indigo-300", "bg-indigo-50/40");
+      });
+
+      dz.addEventListener("drop", (e) => {
+        e.preventDefault();
+        dz.classList.remove("border-indigo-300", "bg-indigo-50/40");
+
+        const file = e.dataTransfer.files && e.dataTransfer.files[0];
+        if (!file) return;
+
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        fileInput.files = dt.files;
+        setFileUI(file);
+      });
+    }
+
+    // Inicializa comportamentos de UX locais da tela de cadastro.
+    document.addEventListener("DOMContentLoaded", function () {
+      applyFieldStyles();
+      styleSelect2();
+      initDropzone();
+      const usandoTomSelect = initTomSelectCadastro();
+      if (!usandoTomSelect) wireColaboradorAutoFill();
+      initDatepicker();
+    });
+  })();
+</script>
+
+{% endblock %}
+

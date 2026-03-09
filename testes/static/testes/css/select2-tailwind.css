@@ -1,0 +1,183 @@
+/* =========================
+   Select2 "Tailwind look"
+   ========================= */
+
+/* Container do select2 ocupar largura */
+.select2-container {
+  width: 100% !important;
+}
+
+/* Base: seleção single como input h-11 */
+.select2-container--default .select2-selection--single {
+  height: 44px; /* h-11 */
+  border-radius: 0.75rem; /* rounded-xl */
+  border: 1px solid rgb(226 232 240); /* slate-200 */
+  background: #fff;
+  display: flex;
+  align-items: center;
+  position: relative; /* IMPORTANTE pro arrow */
+  padding-right: 2.25rem; /* espaço pra seta */
+}
+
+/* Texto renderizado */
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+  padding-left: 0.75rem; /* px-3 */
+  padding-right: 0;
+  line-height: 44px; /* centraliza */
+  color: rgb(15 23 42); /* slate-900 */
+}
+
+/* Arrow container (a “caixa” da seta) */
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+  position: absolute;
+  right: 0.75rem; /* px-3 */
+  top: 50% !important;
+  transform: translateY(-50%);
+  height: 18px;
+  width: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Alguns temas desenham a seta com <b> */
+.select2-container--default .select2-selection--single .select2-selection__arrow b {
+  position: static !important;
+  margin: 0 !important;
+  left: auto !important;
+  top: auto !important;
+  transform: none !important;
+}
+
+/* Foco */
+.select2-container--default.select2-container--focus .select2-selection--single {
+  border-color: rgb(99 102 241); /* indigo-500 */
+  box-shadow: 0 0 0 4px rgb(224 231 255); /* indigo-100 */
+  outline: none;
+}
+
+/* Placeholder */
+.select2-container--default .select2-selection--single .select2-selection__placeholder {
+  color: rgb(148 163 184); /* slate-400 */
+}
+
+/* Remove o "x" (clear) do Select2 */
+.select2-container--default .select2-selection__clear {
+  display: none !important;
+}
+
+/* =========================================================
+   DROPDOWN (a parte que abre) - deixa bem mais moderno
+   ========================================================= */
+
+/* Garante que o dropdown fique acima de modais/drawer */
+.select2-container--open {
+  z-index: 9999;
+}
+
+/* Caixa do dropdown */
+.select2-dropdown {
+  border: 1px solid rgb(226 232 240); /* slate-200 */
+  border-radius: 0.9rem; /* mais arredondado */
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.14);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Remove a borda “dupla” que o Select2 às vezes cria */
+.select2-container--default .select2-dropdown {
+  border-color: rgb(226 232 240);
+}
+
+/* Barra de busca do dropdown */
+.select2-container--default .select2-search--dropdown {
+  padding: 10px;
+  background: transparent;
+  border-bottom: 1px solid rgb(241 245 249); /* slate-100 */
+}
+
+/* Input da busca (ficar igual teu input) */
+.select2-container--default .select2-search--dropdown .select2-search__field {
+  height: 40px;
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 1px solid rgb(226 232 240);
+  padding: 0 12px;
+  font-size: 14px;
+  outline: none;
+  background: white;
+  color: rgb(15 23 42);
+}
+
+.select2-container--default .select2-search--dropdown .select2-search__field:focus {
+  border-color: rgb(99 102 241) !important;
+  box-shadow: 0 0 0 4px rgb(224 231 255) !important;
+  outline: none !important;
+}
+
+/* Lista */
+.select2-container--default .select2-results > .select2-results__options {
+  max-height: 280px; /* altura legal */
+  padding: 6px;
+}
+
+/* Cada opção */
+.select2-container--default .select2-results__option {
+  border-radius: 0.75rem;
+  padding: 10px 12px;
+  font-size: 14px;
+  line-height: 1.15rem;
+  color: rgb(15 23 42);
+}
+
+/* Hover (compativel com variacoes de classe/atributo do Select2) */
+.select2-container--default .select2-results__option--highlighted.select2-results__option--selectable {
+  background: rgb(224 231 255); /* indigo-100 */
+  color: rgb(49 46 129);        /* indigo-900 */
+}
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+  background: rgb(224 231 255) !important; /* indigo-100 */
+  color: rgb(49 46 129) !important;        /* indigo-900 */
+}
+
+/* Selecionado (compativel com variacoes de classe/atributo do Select2) */
+.select2-container--default .select2-results__option--selected {
+  background: rgb(199 210 254); /* indigo-200 */
+  color: rgb(49 46 129);        /* indigo-900 */
+  font-weight: 600;
+}
+.select2-container--default .select2-results__option[aria-selected="true"] {
+  background: rgb(199 210 254) !important; /* indigo-200 */
+  color: rgb(49 46 129) !important;        /* indigo-900 */
+  font-weight: 600 !important;
+}
+
+/* Quando a opcao selecionada tambem esta em hover/teclado, manter destaque indigo */
+.select2-container--default .select2-results__option--highlighted[aria-selected="true"] {
+  background: rgb(129 140 248) !important; /* indigo-400 */
+  color: #fff !important;
+}
+
+/* Mensagem “buscando / sem resultados” */
+.select2-container--default .select2-results__option--disabled {
+  color: rgb(100 116 139); /* slate-500 */
+  padding: 10px 12px;
+}
+
+/* Scrollbar (webkit) */
+.select2-container--default .select2-results > .select2-results__options::-webkit-scrollbar {
+  width: 10px;
+}
+.select2-container--default .select2-results > .select2-results__options::-webkit-scrollbar-thumb {
+  background: rgb(226 232 240); /* slate-200 */
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+.select2-container--default .select2-results > .select2-results__options::-webkit-scrollbar-thumb:hover {
+  background: rgb(203 213 225); /* slate-300 */
+  border: 3px solid transparent;
+  background-clip: content-box;
+}

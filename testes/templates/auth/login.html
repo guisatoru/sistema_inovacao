@@ -1,0 +1,189 @@
+{% load static %}
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Entrar • Testes para Promoção</title>
+
+    <!-- Tailwind via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* grid suave (igual base.html) */
+      .bg-grid-soft {
+        background-image: radial-gradient(
+          circle at 1px 1px,
+          rgba(15, 23, 42, 0.06) 1px,
+          transparent 0
+        );
+        background-size: 26px 26px;
+        mask-image: radial-gradient(
+          ellipse at center,
+          black 55%,
+          transparent 80%
+        );
+        -webkit-mask-image: radial-gradient(
+          ellipse at center,
+          black 55%,
+          transparent 80%
+        );
+      }
+    </style>
+  </head>
+
+  <body
+    class="min-h-screen bg-slate-50 text-slate-900 antialiased"
+    style="
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto,
+        Helvetica, Arial, 'Apple Color Emoji', 'Segoe UI Emoji';
+    "
+  >
+    <!-- Fundo igual dashboard: gradiente + blobs + grid -->
+    <div class="pointer-events-none fixed inset-0 -z-10">
+      <div
+        class="absolute inset-0 bg-gradient-to-b from-slate-50 via-slate-50 to-slate-100"
+      ></div>
+
+      <div
+        class="absolute -top-40 left-1/2 h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-indigo-400/16 blur-3xl"
+      ></div>
+      <div
+        class="absolute -bottom-48 right-[-120px] h-[520px] w-[520px] rounded-full bg-sky-400/14 blur-3xl"
+      ></div>
+      <div
+        class="absolute -bottom-48 left-[-120px] h-[520px] w-[520px] rounded-full bg-cyan-300/16 blur-3xl"
+      ></div>
+
+      <div class="absolute inset-0 bg-grid-soft opacity-70"></div>
+    </div>
+
+    <main class="min-h-screen grid place-items-center px-4 py-10">
+      <div class="w-full max-w-md">
+        <!-- Topo -->
+        <div class="mb-6 text-center">
+          <!-- chip do app -->
+          <div
+            class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 ring-1 ring-indigo-200/60"
+          >
+            <!-- ícone simples (flask) -->
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-6 w-6 text-indigo-600"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M10 2v6.5L5.5 17a3 3 0 002.6 4.5h7.8A3 3 0 0018.5 17L14 8.5V2"
+              />
+            </svg>
+          </div>
+
+          <h1 class="text-2xl font-semibold tracking-tight text-slate-900">
+            Testes para Promoção
+          </h1>
+          <p class="mt-1 text-sm text-slate-500">
+            Acesse com seu usuário do admin.
+          </p>
+        </div>
+
+        <!-- Card -->
+        <section
+          class="rounded-2xl bg-white p-7 shadow-sm ring-1 ring-slate-200/60"
+        >
+          <div class="mb-5">
+            <h2 class="text-lg font-semibold text-slate-900">Entrar</h2>
+            <p class="mt-1 text-sm text-slate-500">
+              Use suas credenciais para continuar.
+            </p>
+          </div>
+
+          {% if form.errors %}
+          <div
+            class="mb-4 rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-800 ring-1 ring-rose-200/60"
+          >
+            <div class="font-semibold">Não foi possível entrar</div>
+            <div class="mt-1 text-rose-700">
+              Usuário ou senha inválidos. Tente novamente.
+            </div>
+          </div>
+          {% endif %}
+
+          <form method="post" class="space-y-4" autocomplete="off">
+            {% csrf_token %}
+            {% if next %}
+            <input type="hidden" name="next" value="{{ next }}" />
+            {% endif %}
+
+            <div>
+              <label class="block text-xs font-medium text-slate-600 mb-1"
+                >Usuário</label
+              >
+              <input
+                type="text"
+                name="username"
+                autofocus
+                required
+                autocomplete="off"
+                class="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 placeholder:text-slate-400
+                       focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 focus:outline-none"
+                placeholder="Seu usuário do admin"
+              />
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-600 mb-1"
+                >Senha</label
+              >
+              <input
+                type="password"
+                name="password"
+                required
+                autocomplete="off"
+                class="h-11 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm text-slate-900 placeholder:text-slate-400
+                       focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 focus:outline-none"
+                placeholder="Digite sua senha"
+              />
+            </div>
+
+            <!-- Botão primário (MESMO padrão do “Novo teste”) -->
+            <button
+              type="submit"
+              class="w-full rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white
+                     hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-100 active:translate-y-[1px]"
+            >
+              Entrar
+            </button>
+
+            <div class="pt-1 text-xs text-slate-500">
+              Usuários são criados no
+              <a
+                href="/admin/"
+                class="font-medium text-indigo-600 hover:text-indigo-700 hover:underline"
+                >admin</a
+              >.
+            </div>
+          </form>
+        </section>
+
+        <!-- Rodapé -->
+        <div class="mt-6 text-center text-xs text-slate-500">
+          v1 • ambiente interno
+        </div>
+      </div>
+    </main>
+  </body>
+</html>
